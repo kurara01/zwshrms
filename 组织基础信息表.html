@@ -28,6 +28,15 @@
     .parent-picker-empty { padding: 16px 8px; color: var(--text-secondary); text-align: center; }
     .attachment-preview { width: 100%; min-height: 420px; border: 1px solid var(--border-lighter); border-radius: var(--radius-sm); background: var(--fill); }
     .attachment-image { display: block; max-width: 100%; max-height: 520px; margin: 0 auto; }
+    .organization-filter-grid { grid-template-columns: repeat(4, minmax(130px, 1fr)); }
+    .organization-filter-grid .filter-actions { grid-column: 3 / -1; justify-content: flex-end; }
+    .description-item.full { grid-column: 1 / -1; }
+    .import-note { margin: 0; padding-left: 20px; line-height: 1.9; }
+    .readonly-field-list { margin-top: 10px; color: var(--text-secondary); font-size: 12px; line-height: 1.7; }
+    @media (max-width: 1380px) {
+      .organization-filter-grid { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+      .organization-filter-grid .filter-actions { grid-column: 1 / -1; justify-content: flex-start; }
+    }
   </style>
 </head>
 <body>
@@ -36,7 +45,7 @@
     <aside class="sidebar" id="sidebar" aria-label="主导航">
       <div class="brand"><div class="brand-mark" aria-hidden="true">九</div><div class="brand-copy"><div class="brand-name">杂物社 · 人事系统</div></div></div>
       <nav class="nav-scroll">
-        <section class="nav-group"><button class="nav-group-trigger" type="button" aria-expanded="true"><span class="nav-arrow" aria-hidden="true">▶</span><span class="nav-label">组织人事</span></button><div class="nav-items"><a class="nav-item active" href="./组织基础信息表.html" aria-current="page">组织架构</a><a class="nav-item" href="./岗位管理.html">岗位管理</a><a class="nav-item" href="./编制管理.html">编制管理</a></div></section>
+        <section class="nav-group"><button class="nav-group-trigger" type="button" aria-expanded="true"><span class="nav-arrow" aria-hidden="true">▶</span><span class="nav-label">组织人事</span></button><div class="nav-items"><a class="nav-item active" href="./组织基础信息表.html" aria-current="page">组织架构</a><a class="nav-item" href="./岗位管理.html">岗位管理</a><a class="nav-item" href="./编制管理.html">编制管理</a><a class="nav-item" href="./社保信息.html">社保信息</a></div></section>
         <section class="nav-group"><button class="nav-group-trigger" type="button" aria-expanded="true"><span class="nav-arrow" aria-hidden="true">▶</span><span class="nav-label">考勤管理</span></button><div class="nav-items"><a class="nav-item" href="./标准工时维护.html">标准工时维护</a></div></section>
       </nav>
     </aside>
@@ -52,11 +61,13 @@
           <aside class="tree-card card" aria-label="组织树"><header class="card-header"><span>组织架构</span><div><button class="cell-link" id="expandButton" type="button">全部展开</button>&nbsp;&nbsp;<button class="cell-link" id="collapseButton" type="button">收起</button></div></header><div class="tree-search"><label class="sr-only" for="treeSearch">搜索组织</label><input class="input" id="treeSearch" type="search" placeholder="搜索名称或编码" /></div><div class="tree-root" id="treeRoot" role="tree"></div></aside>
 
           <section class="content-stack" aria-label="组织列表">
-            <form class="filter-card card" id="filterForm"><div class="filter-grid">
+            <form class="filter-card card" id="filterForm"><div class="filter-grid organization-filter-grid">
               <div class="field"><label for="filterKeyword">组织名称/编码</label><input class="input" id="filterKeyword" type="search" placeholder="请输入组织名称或编码" /></div>
               <div class="field"><label for="filterStoreCode">门店编码</label><input class="input mono" id="filterStoreCode" type="search" placeholder="请输入门店编码" /></div>
               <div class="field"><label for="filterType">组织类型</label><select class="select" id="filterType"><option value="">全部类型</option></select></div>
               <div class="field"><label for="filterStatus">组织状态</label><select class="select" id="filterStatus"><option value="">全部状态</option><option value="pending">待生效</option><option value="active">生效中</option><option value="expired">已失效</option><option value="stopped">已停用</option></select></div>
+              <div class="field"><label for="filterStoreGrade">门店等级</label><select class="select" id="filterStoreGrade"><option value="">全部等级</option><option value="A1">A1</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option></select></div>
+              <div class="field"><label for="filterStoreCategory">门店类别</label><select class="select" id="filterStoreCategory"><option value="">全部类别</option><option value="cityFlagship">城市标杆店</option><option value="areaFlagship">大区标杆店</option><option value="community">社区标准店</option></select></div>
               <div class="filter-actions"><button class="button primary" type="submit">查询</button><button class="button" type="reset">重置</button></div>
             </div></form>
 
@@ -84,7 +95,10 @@
     <div class="field"><label for="orgExpiry">失效时间</label><input class="input" id="orgExpiry" type="datetime-local" step="1" /></div>
     <div class="field store-field" hidden><label for="storeCode">门店编码</label><input class="input mono" id="storeCode" maxlength="30" /></div>
     <div class="field store-field" hidden><label for="storeNature">门店性质</label><select class="select" id="storeNature"><option value="">请选择</option><option value="direct">直营</option><option value="hejief">加盟商合杰</option><option value="self">加盟商自理</option></select></div>
-    <div class="field store-field" hidden><label for="socialSecurity">社保类型</label><select class="select" id="socialSecurity"><option value="">请选择</option><option value="local">本地社保</option><option value="remote">异地社保</option></select></div>
+    <div class="field store-field" hidden><label for="storeGrade">门店等级</label><select class="select" id="storeGrade"><option value="">请选择</option><option value="A1">A1</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option></select></div>
+    <div class="field store-field" hidden><label for="storeCategory">门店类别</label><select class="select" id="storeCategory"><option value="">请选择</option><option value="cityFlagship">城市标杆店</option><option value="areaFlagship">大区标杆店</option><option value="community">社区标准店</option></select></div>
+    <div class="field store-field" hidden><label for="storeArea">门店面积（㎡）</label><input class="input" id="storeArea" type="number" min="0" step="0.01" inputmode="decimal" /></div>
+    <div class="field store-field" hidden><label for="annualRevenue">门店年营业额预估（万元）</label><input class="input" id="annualRevenue" type="number" min="0" step="0.01" inputmode="decimal" /></div>
     <div class="field store-field" hidden><label for="openDate">开店日期</label><input class="input" id="openDate" type="date" /></div>
     <div class="field store-field" hidden><label for="closeDate">闭店日期</label><input class="input" id="closeDate" type="date" /></div>
     <div class="field store-field full" hidden><label for="storeAddress">门店具体地址</label><div class="field-inline"><input class="input" id="storeAddress" maxlength="120" placeholder="例如：上海市浦东新区陆家嘴西路168号" /><button class="button address-action" id="recognizeAddressButton" type="button">识别省市区</button></div></div>
@@ -93,6 +107,9 @@
     <div class="field store-field" hidden><label for="storeDistrict">区县</label><select class="select" id="storeDistrict"><option value="">请选择区县</option></select></div>
     <div class="field store-field" hidden><label for="storeLng">经度</label><input class="input" id="storeLng" inputmode="decimal" placeholder="例如121.500000" /></div>
     <div class="field store-field" hidden><label for="storeLat">纬度</label><input class="input" id="storeLat" inputmode="decimal" placeholder="例如31.230000" /></div>
+    <div class="field store-field" hidden><label for="handoverStatus">开店协同交房表状态</label><input class="input" id="handoverStatus" maxlength="50" /></div>
+    <div class="field store-field full" hidden><label for="franchiseTransfer">加盟商转出情况</label><textarea class="textarea" id="franchiseTransfer" maxlength="500"></textarea></div>
+    <div class="field store-field full" hidden><label for="renovationRenewal">改造、移位续约时间</label><textarea class="textarea" id="renovationRenewal" maxlength="500"></textarea></div>
     <div class="field full"><label for="orgRemark">备注</label><textarea class="textarea" id="orgRemark" maxlength="200"></textarea></div>
   </div></div><footer class="dialog-footer"><button class="button" type="button" data-close="orgDialog">取消</button><button class="button primary" type="submit">保存</button></footer></form></dialog>
 
@@ -103,13 +120,13 @@
   <dialog id="historyDialog" class="wide" aria-labelledby="historyTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="historyTitle">历史架构与快照</h2><button class="icon-button" type="button" data-close="historyDialog" aria-label="关闭历史架构">✕</button></header><div class="dialog-body"><div class="warning-box">历史模式只读。系统在每月15日23:59:59和月末23:59:59自动生成快照，也可随时手工生成。</div><table class="history-list"><thead><tr><th>快照时间</th><th>类型</th><th>说明</th><th>创建人</th><th>附件</th><th>操作</th></tr></thead><tbody id="historyBody"></tbody></table></div><footer class="dialog-footer"><button class="button" type="button" data-close="historyDialog">关闭</button></footer></div></dialog>
   <dialog id="logsDialog" class="wide" aria-labelledby="logsTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="logsTitle">组织操作日志</h2><button class="icon-button" type="button" data-close="logsDialog" aria-label="关闭日志">✕</button></header><div class="dialog-body"><table class="log-list"><thead><tr><th>时间</th><th>操作人</th><th>操作</th><th>组织</th><th>说明</th><th>附件</th></tr></thead><tbody id="logsBody"></tbody></table></div><footer class="dialog-footer"><button class="button" type="button" data-close="logsDialog">关闭</button></footer></div></dialog>
   <dialog id="attachmentDialog" class="wide" aria-labelledby="attachmentTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="attachmentTitle">查看附件</h2><button class="icon-button" type="button" data-close="attachmentDialog" aria-label="关闭附件预览">✕</button></header><div class="dialog-body" id="attachmentBody"></div><footer class="dialog-footer"><a class="button" id="attachmentDownload" href="#" download hidden>下载附件</a><button class="button primary" type="button" data-close="attachmentDialog">关闭</button></footer></div></dialog>
-  <dialog id="importDialog" class="wide" aria-labelledby="importTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="importTitle">批量导入组织</h2><button class="icon-button" type="button" data-close="importDialog" aria-label="关闭导入">✕</button></header><div class="dialog-body"><div class="tabs"><button class="tab active" data-import-mode="create" type="button">导入新增</button><button class="tab" data-import-mode="update" type="button">导入更新</button></div><div class="impact-box mt-14" id="importDescription"></div><ol class="import-steps mt-14"><li>组织编码全局唯一；门店编码填写后需全局唯一。</li><li>导入更新必须填写组织编码作为匹配依据。</li><li>更新不修改组织类型和上级组织；层级变化使用“调整层级”。</li></ol><div class="upload-box"><p>原型使用示例文件演示校验结果</p><div class="upload-actions"><button class="button" id="downloadTemplateButton" type="button">下载模板</button><button class="button" id="loadExampleButton" type="button">加载示例文件</button></div></div><div id="importPreview"></div></div><footer class="dialog-footer"><button class="button" type="button" data-close="importDialog">取消</button><button class="button primary" id="confirmImportButton" type="button" disabled>确认导入</button></footer></div></dialog>
+  <dialog id="importDialog" class="wide" aria-labelledby="importTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="importTitle">批量导入组织</h2><button class="icon-button" type="button" data-close="importDialog" aria-label="关闭导入">✕</button></header><div class="dialog-body"><div class="tabs"><button class="tab active" data-import-mode="create" type="button">导入新增</button><button class="tab" data-import-mode="update" type="button">导入更新</button></div><div class="impact-box mt-14" id="importDescription"></div><ol class="import-steps mt-14" id="importSteps"></ol><div class="upload-box"><p id="importUploadText">选择 Excel 文件导入</p><input class="input" id="importFile" type="file" accept=".xls,.xlsx" /><div class="file-name" id="importFileName">尚未选择文件</div><div class="upload-actions"><button class="button" id="downloadTemplateButton" type="button">下载新增空白模板</button><button class="button" id="exportForUpdateButton" type="button" hidden>导出当前结果</button><button class="button" id="loadExampleButton" type="button">加载示例文件</button></div><div class="readonly-field-list" id="readonlyFieldList"></div></div><div id="importPreview"></div></div><footer class="dialog-footer"><button class="button" type="button" data-close="importDialog">取消</button><button class="button primary" id="confirmImportButton" type="button" disabled>确认导入</button></footer></div></dialog>
 
   <script src="./prototype-common.js"></script>
   <script src="./prototype-data.js"></script>
   <script>
     "use strict";
-    const { byId, escapeHTML, showToast, openDialog, closeDialog } = window.PrototypeUI;
+    const { byId, escapeHTML, showToast, openDialog, closeDialog, downloadUpdateWorkbook, downloadCreateWorkbook } = window.PrototypeUI;
     const types = [{ value: "company", label: "公司" }, { value: "functional", label: "职能" }, { value: "zone", label: "战区" }, { value: "area", label: "大区" }, { value: "region", label: "小区" }, { value: "store", label: "门店" }];
     const people = [{ id: "p01", name: "张明" }, { id: "p02", name: "李华" }, { id: "p03", name: "王芳" }, { id: "p04", name: "陈丽" }, { id: "p05", name: "周萌" }, { id: "p06", name: "刘洋" }];
     const addressData = { "上海市": { "上海市": ["浦东新区", "静安区", "徐汇区"] }, "浙江省": { "杭州市": ["上城区", "西湖区"] }, "江苏省": { "南京市": ["玄武区", "秦淮区"] } };
@@ -117,7 +134,7 @@
     const organizations = Shared.data.organizations;
     const snapshots = Shared.data.organizationSnapshots;
     const logs = Shared.data.organizationLogs;
-    const state = { selectedId: null, expanded: new Set([1, 2, 3, 4, 5]), editingId: null, movingId: null, stoppingId: null, statusAction: "stop", historyId: null, importMode: "create", importReady: false, filters: { keyword: "", storeCode: "", type: "", status: "" } };
+    const state = { selectedId: null, expanded: new Set([1, 2, 3, 4, 5]), editingId: null, movingId: null, stoppingId: null, statusAction: "stop", historyId: null, importMode: "create", importReady: false, importFileName: "", importAttachment: null, importFailureContent: "", importGeneration: 0, filters: { keyword: "", storeCode: "", type: "", status: "", storeGrade: "", storeCategory: "" } };
     const parentPickerState = { currentId: null, allowRoot: false, value: "" };
     const moveParentPickerState = { currentId: null, allowRoot: false, value: "" };
 
@@ -129,22 +146,25 @@
     function children(id, data = currentData()) { return data.filter(item => item.parentId === id); }
     function scopeIds() { const data = currentData(); return state.selectedId === null ? data.map(item => item.id) : [state.selectedId, ...descendantIds(state.selectedId, data)]; }
     function statusTag(status) { const meta = { pending: ["待生效", "warning"], active: ["生效中", "success"], expired: ["已失效", "info"], stopped: ["已停用", "info"] }[status]; return `<span class="tag ${meta[1]}">${meta[0]}</span>`; }
-    function statusTagText(status) { return { pending: "待生效", active: "生效中", expired: "已失效", stopped: "已停用" }[status] || status; }
+    function statusTagText(status) { return status ? ({ pending: "待生效", active: "生效中", expired: "已失效", stopped: "已停用" }[status] || status) : "未填写"; }
     function natureText(value) { return { direct: "直营", hejief: "加盟商合杰", self: "加盟商自理" }[value] || "—"; }
-    function socialText(value) { return { local: "本地社保", remote: "异地社保" }[value] || "—"; }
+    function categoryText(value) { return { cityFlagship: "城市标杆店", areaFlagship: "大区标杆店", community: "社区标准店" }[value] || "—"; }
     function logValue(value) { return value === "" || value == null ? "未填写" : String(value); }
     function fieldChange(label, before, after, formatter = logValue) { return String(before ?? "") === String(after ?? "") ? "" : `${label}：${formatter(before)} → ${formatter(after)}`; }
     function personLogText(value) { return value ? personText(value) : "未填写"; }
     function natureLogText(value) { return value ? natureText(value) : "未填写"; }
-    function socialLogText(value) { return value ? socialText(value) : "未填写"; }
+    function categoryLogText(value) { return value ? categoryText(value) : "未填写"; }
     function timeLogText(value) { return value ? formatTime(value) : "未填写"; }
     function organizationChanges(before, after) {
       return [
         fieldChange("组织名称", before.name, after.name), fieldChange("负责人", before.leaderId, after.leaderId, personLogText), fieldChange("HRBP", before.hrbpId, after.hrbpId, personLogText),
         fieldChange("生效时间", before.effective, after.effective, timeLogText), fieldChange("失效时间", before.expiry, after.expiry, timeLogText), fieldChange("门店编码", before.storeCode, after.storeCode),
-        fieldChange("门店性质", before.storeNature, after.storeNature, natureLogText), fieldChange("社保类型", before.socialSecurity, after.socialSecurity, socialLogText), fieldChange("开店日期", before.openDate, after.openDate),
+        fieldChange("门店性质", before.storeNature, after.storeNature, natureLogText), fieldChange("门店面积（㎡）", before.storeArea, after.storeArea), fieldChange("门店年营业额预估（万元）", before.annualRevenue, after.annualRevenue),
+        fieldChange("门店等级", before.storeGrade, after.storeGrade), fieldChange("门店类别", before.storeCategory, after.storeCategory, categoryLogText), fieldChange("开店日期", before.openDate, after.openDate),
         fieldChange("闭店日期", before.closeDate, after.closeDate), fieldChange("省份", before.province, after.province), fieldChange("城市", before.city, after.city), fieldChange("区县", before.district, after.district),
-        fieldChange("详细地址", before.address, after.address), fieldChange("经度", before.lng, after.lng), fieldChange("纬度", before.lat, after.lat), fieldChange("备注", before.remark, after.remark)
+        fieldChange("门店具体地址", before.address, after.address), fieldChange("经度", before.lng, after.lng), fieldChange("纬度", before.lat, after.lat),
+        fieldChange("加盟商转出情况", before.franchiseTransfer, after.franchiseTransfer), fieldChange("改造、移位续约时间", before.renovationRenewal, after.renovationRenewal),
+        fieldChange("开店协同交房表状态", before.handoverStatus, after.handoverStatus), fieldChange("备注", before.remark, after.remark)
       ].filter(Boolean);
     }
     function addLog(action, target, note, attachment = null, operator = "张明") { logs.unshift({ time: Shared.localDateTime(), operator, action, target, note, attachment }); Shared.save(); }
@@ -163,11 +183,11 @@
       const data = currentData(), treeData = data.filter(item => item.status === "active"), keyword = byId("treeSearch").value.trim().toLowerCase();
       function treeChildren(id) { return treeData.filter(item => item.parentId === id); }
       function matches(item) { if (!keyword) return true; if (`${item.name}${item.code}${item.storeCode || ""}`.toLowerCase().includes(keyword)) return true; return treeChildren(item.id).some(matches); }
-      function node(item, depth) { if (!matches(item)) return ""; const nodes = treeChildren(item.id), expanded = state.expanded.has(item.id) || Boolean(keyword); return `<div class="tree-row" style="--depth:${depth}"><button class="tree-toggle ${nodes.length ? "" : "placeholder"}" type="button" data-toggle="${item.id}" aria-expanded="${expanded}">▶</button><button class="tree-label ${state.selectedId === item.id ? "active" : ""}" type="button" data-select="${item.id}"><span class="status-slot"></span><span class="tree-name" title="${escapeHTML(item.name)}">${escapeHTML(item.name)}</span></button></div>${expanded ? nodes.map(child => node(child, depth + 1)).join("") : ""}`; }
-      byId("treeRoot").innerHTML = `<div class="tree-row" style="--depth:0"><button class="tree-toggle placeholder" tabindex="-1">▶</button><button class="tree-label ${state.selectedId === null ? "active" : ""}" type="button" data-select=""><span class="status-slot"></span><span class="tree-name">全部组织</span></button></div>${treeData.filter(item => item.parentId === null).map(item => node(item, 0)).join("")}`;
+      function node(item, depth) { if (!matches(item)) return ""; const nodes = treeChildren(item.id), expanded = state.expanded.has(item.id) || Boolean(keyword); return `<div class="tree-row" style="--depth:${depth}"><button class="tree-toggle ${nodes.length ? "" : "placeholder"}" type="button" data-toggle="${item.id}" aria-expanded="${expanded}" aria-label="${expanded ? "收起" : "展开"}${escapeHTML(item.name)}">▶</button><button class="tree-label ${state.selectedId === item.id ? "active" : ""}" type="button" data-select="${item.id}"><span class="tree-name" title="${escapeHTML(item.name)}">${escapeHTML(item.name)}</span></button></div>${expanded ? nodes.map(child => node(child, depth + 1)).join("") : ""}`; }
+      byId("treeRoot").innerHTML = `<div class="tree-row" style="--depth:0"><button class="tree-toggle placeholder" tabindex="-1">▶</button><button class="tree-label ${state.selectedId === null ? "active" : ""}" type="button" data-select=""><span class="tree-name">全部组织</span></button></div>${treeData.filter(item => item.parentId === null).map(item => node(item, 0)).join("")}`;
     }
-    function rows() { const ids = scopeIds(), keyword = state.filters.keyword.toLowerCase(), storeCode = state.filters.storeCode.toLowerCase(); return currentData().filter(item => ids.includes(item.id) && (!keyword || `${item.name}${item.code}`.toLowerCase().includes(keyword)) && (!storeCode || (item.storeCode || "").toLowerCase().includes(storeCode)) && (!state.filters.type || item.type === state.filters.type) && (!state.filters.status || item.status === state.filters.status)); }
-    function renderTable() { const result = rows(), readOnly = Boolean(state.historyId); byId("selectedScope").textContent = state.selectedId ? `${itemById(state.selectedId)?.name}及下级` : "全部组织"; byId("totalCount").textContent = result.length; byId("paginationInfo").textContent = result.length ? `显示1–${result.length}条，共${result.length}条` : "共0条"; byId("tableBody").innerHTML = result.length ? result.map(item => { const immutable = readOnly || item.status === "expired", stopped = item.status === "stopped"; return `<tr><td><button class="cell-link" type="button" data-action="detail" data-id="${item.id}">${escapeHTML(item.name)}</button></td><td class="mono">${escapeHTML(item.code)}</td><td class="mono">${escapeHTML(item.storeCode || "—")}</td><td>${typeText(item.type)}</td><td>${escapeHTML(personText(item.leaderId))}</td><td>${hasHrbp(item.type) ? escapeHTML(personText(item.hrbpId)) : "—"}</td><td title="${escapeHTML(itemById(item.parentId)?.name || "—")}">${escapeHTML(itemById(item.parentId)?.name || "—")}</td><td>${escapeHTML(formatTime(item.effective))}</td><td>${statusTag(item.status)}</td><td><div class="row-actions"><button type="button" data-action="detail" data-id="${item.id}">详情</button><button type="button" data-action="edit" data-id="${item.id}" ${immutable ? "disabled" : ""}>编辑</button><button type="button" data-action="move" data-id="${item.id}" ${immutable ? "disabled" : ""}>调整层级</button>${stopped ? `<button type="button" data-action="enable" data-id="${item.id}" ${readOnly ? "disabled" : ""}>启用</button>` : `<button type="button" data-action="stop" data-id="${item.id}" ${immutable ? "disabled" : ""}>停用</button>`}</div></td></tr>`; }).join("") : `<tr><td colspan="10"><div class="empty-state">当前范围没有符合条件的组织。</div></td></tr>`; }
+    function rows() { const ids = scopeIds(), keyword = state.filters.keyword.toLowerCase(), storeCode = state.filters.storeCode.toLowerCase(); return currentData().filter(item => ids.includes(item.id) && (!keyword || `${item.name}${item.code}`.toLowerCase().includes(keyword)) && (!storeCode || (item.storeCode || "").toLowerCase().includes(storeCode)) && (!state.filters.type || item.type === state.filters.type) && (!state.filters.status || item.status === state.filters.status) && (!state.filters.storeGrade || item.storeGrade === state.filters.storeGrade) && (!state.filters.storeCategory || item.storeCategory === state.filters.storeCategory)); }
+    function renderTable() { const result = rows(), readOnly = Boolean(state.historyId); byId("selectedScope").textContent = state.selectedId ? `${itemById(state.selectedId)?.name}及下级` : "全部组织"; byId("totalCount").textContent = result.length; byId("paginationInfo").textContent = result.length ? `显示1–${result.length}条，共${result.length}条` : "共0条"; document.querySelector(".pagination .page-button").hidden = !result.length; byId("tableBody").innerHTML = result.length ? result.map(item => { const disabled = readOnly, canEnable = ["stopped", "expired"].includes(item.status); return `<tr><td title="${escapeHTML(item.name)}"><button class="cell-link" type="button" data-action="detail" data-id="${item.id}" title="${escapeHTML(item.name)}">${escapeHTML(item.name)}</button></td><td class="mono">${escapeHTML(item.code)}</td><td class="mono">${escapeHTML(item.storeCode || "—")}</td><td>${typeText(item.type)}</td><td>${escapeHTML(personText(item.leaderId))}</td><td>${hasHrbp(item.type) ? escapeHTML(personText(item.hrbpId)) : "—"}</td><td title="${escapeHTML(itemById(item.parentId)?.name || "—")}">${escapeHTML(itemById(item.parentId)?.name || "—")}</td><td>${escapeHTML(formatTime(item.effective))}</td><td>${statusTag(item.status)}</td><td><div class="row-actions"><button type="button" data-action="detail" data-id="${item.id}">详情</button><button type="button" data-action="edit" data-id="${item.id}" ${disabled ? "disabled" : ""}>编辑</button><button type="button" data-action="move" data-id="${item.id}" ${disabled ? "disabled" : ""}>调整层级</button>${canEnable ? `<button type="button" data-action="enable" data-id="${item.id}" ${disabled ? "disabled" : ""}>启用</button>` : `<button type="button" data-action="stop" data-id="${item.id}" ${disabled ? "disabled" : ""}>停用</button>`}</div></td></tr>`; }).join("") : `<tr><td colspan="10"><div class="empty-state">当前范围没有符合条件的组织。</div></td></tr>`; }
     function renderAll() { refreshStatuses(); renderTree(); renderTable(); const readOnly = Boolean(state.historyId); ["addButton", "importButton", "snapshotButton"].forEach(id => { byId(id).disabled = readOnly; }); byId("historyBanner").hidden = !readOnly; if (readOnly) byId("historyText").textContent = `正在查看${snapshots.find(item => item.id === state.historyId)?.time}的组织快照，页面只读。`; }
     function fillTypeOptions() { const options = types.map(item => `<option value="${item.value}">${item.label}</option>`).join(""); byId("filterType").innerHTML = `<option value="">全部类型</option>${options}`; byId("orgType").innerHTML = options; }
     function fillPeople() { const options = `<option value="">请选择</option>${people.map(item => `<option value="${item.id}">${escapeHTML(item.name)}</option>`).join("")}`; byId("orgLeader").innerHTML = options; byId("orgHrbp").innerHTML = options; }
@@ -183,36 +203,281 @@
     function closeMoveParentPicker() { byId("moveParentDropdown").hidden = true; byId("moveParentTrigger").setAttribute("aria-expanded", "false"); }
     function configureMoveParentPicker(currentId, allowRoot, value) { moveParentPickerState.currentId = currentId; moveParentPickerState.allowRoot = allowRoot; byId("moveParentSearch").value = ""; closeMoveParentPicker(); setMoveParentPickerValue(value); }
     function fillAddressOptions(province = "", city = "", district = "") { byId("storeProvince").innerHTML = `<option value="">请选择省份</option>${Object.keys(addressData).map(item => `<option value="${item}">${item}</option>`).join("")}`; byId("storeProvince").value = province; const cities = Object.keys(addressData[province] || {}); byId("storeCity").innerHTML = `<option value="">请选择城市</option>${cities.map(item => `<option value="${item}">${item}</option>`).join("")}`; byId("storeCity").value = city; const districts = addressData[province]?.[city] || []; byId("storeDistrict").innerHTML = `<option value="">请选择区县</option>${districts.map(item => `<option value="${item}">${item}</option>`).join("")}`; byId("storeDistrict").value = district; }
-    function toggleConditionalFields() { const type = byId("orgType").value, allowRoot = type === "company", currentValue = parentPickerState.value; document.querySelectorAll(".hrbp-field").forEach(field => { field.hidden = !hasHrbp(type); }); document.querySelectorAll(".store-field").forEach(field => { field.hidden = !isStore(type); }); parentPickerState.allowRoot = allowRoot; setParentPickerValue(!allowRoot && currentValue === "__root__" ? "" : currentValue || (allowRoot ? "__root__" : "")); }
-    function openForm(id = null) { state.editingId = id; const item = organizations.find(row => row.id === id), type = item?.type || "functional", parentValue = item ? (item.parentId == null ? "__root__" : String(item.parentId)) : (type === "company" ? "__root__" : ""); byId("orgTitle").textContent = item ? "编辑组织" : "新增组织"; byId("orgName").value = item?.name || ""; byId("orgCode").value = item?.code || ""; byId("orgCode").disabled = Boolean(item); byId("orgType").value = type; byId("orgType").disabled = Boolean(item); configureParentPicker(id, type === "company", parentValue, Boolean(item)); byId("orgLeader").value = item?.leaderId || ""; byId("orgHrbp").value = item?.hrbpId || ""; byId("orgEffective").value = item?.effective || ""; byId("orgExpiry").value = item?.expiry || ""; byId("storeCode").value = item?.storeCode || ""; byId("storeCode").disabled = false; byId("storeNature").value = item?.storeNature || ""; byId("socialSecurity").value = item?.socialSecurity || ""; byId("openDate").value = item?.openDate || ""; byId("closeDate").value = item?.closeDate || ""; byId("storeAddress").value = item?.address || ""; fillAddressOptions(item?.province || "", item?.city || "", item?.district || ""); byId("storeLng").value = item?.lng || ""; byId("storeLat").value = item?.lat || ""; byId("orgRemark").value = item?.remark || ""; toggleConditionalFields(); byId("formErrors").hidden = true; openDialog("orgDialog"); }
+    function toggleConditionalFields() { const type = byId("orgType").value, allowRoot = type === "company", currentValue = parentPickerState.value; document.querySelectorAll(".hrbp-field").forEach(field => { field.hidden = !hasHrbp(type); }); document.querySelectorAll(".store-field").forEach(field => { field.hidden = !isStore(type); }); byId("orgParentLabel").classList.toggle("required", !allowRoot); parentPickerState.allowRoot = allowRoot; setParentPickerValue(!allowRoot && currentValue === "__root__" ? "" : currentValue || (allowRoot ? "__root__" : "")); }
+    function openForm(id = null) {
+      state.editingId = id;
+      const item = organizations.find(row => row.id === id), type = item?.type || "functional", parentValue = item ? (item.parentId == null ? "__root__" : String(item.parentId)) : (type === "company" ? "__root__" : "");
+      byId("orgTitle").textContent = item ? "编辑组织" : "新增组织";
+      byId("orgName").value = item?.name || "";
+      byId("orgCode").value = item?.code || "";
+      byId("orgCode").disabled = Boolean(item);
+      byId("orgType").value = type;
+      byId("orgType").disabled = Boolean(item);
+      configureParentPicker(id, type === "company", parentValue, Boolean(item));
+      byId("orgLeader").value = item?.leaderId || "";
+      byId("orgHrbp").value = item?.hrbpId || "";
+      byId("orgEffective").value = item?.effective || "";
+      byId("orgExpiry").value = item?.expiry || "";
+      byId("storeCode").value = item?.storeCode || "";
+      byId("storeCode").disabled = false;
+      byId("storeNature").value = item?.storeNature || "";
+      byId("storeGrade").value = item?.storeGrade || "";
+      byId("storeCategory").value = item?.storeCategory || "";
+      byId("storeArea").value = item?.storeArea ?? "";
+      byId("annualRevenue").value = item?.annualRevenue ?? "";
+      byId("openDate").value = item?.openDate || "";
+      byId("closeDate").value = item?.closeDate || "";
+      byId("storeAddress").value = item?.address || "";
+      fillAddressOptions(item?.province || "", item?.city || "", item?.district || "");
+      byId("storeLng").value = item?.lng || "";
+      byId("storeLat").value = item?.lat || "";
+      byId("handoverStatus").value = item?.handoverStatus || "";
+      byId("franchiseTransfer").value = item?.franchiseTransfer || "";
+      byId("renovationRenewal").value = item?.renovationRenewal || "";
+      byId("orgRemark").value = item?.remark || "";
+      toggleConditionalFields();
+      byId("formErrors").hidden = true;
+      openDialog("orgDialog");
+    }
 
-    function openDetail(id) { const item = itemById(id); if (!item) return; const readOnly = Boolean(state.historyId), stats = readOnly ? null : scopeStats(item.id), storeSection = item.type === "store" ? `<section class="dialog-section"><h3 class="section-title">门店信息</h3><dl class="description-grid"><div class="description-item"><dt>门店编码</dt><dd class="mono">${escapeHTML(item.storeCode || "—")}</dd></div><div class="description-item"><dt>门店性质</dt><dd>${natureText(item.storeNature)}</dd></div><div class="description-item"><dt>社保类型</dt><dd>${socialText(item.socialSecurity)}</dd></div><div class="description-item"><dt>开店日期</dt><dd>${escapeHTML(item.openDate || "—")}</dd></div><div class="description-item"><dt>闭店日期</dt><dd>${escapeHTML(item.closeDate || "—")}</dd></div><div class="description-item"><dt>省市区</dt><dd>${escapeHTML([item.province, item.city, item.district].filter(Boolean).join(" / ") || "—")}</dd></div><div class="description-item"><dt>具体地址</dt><dd>${escapeHTML(item.address || "—")}</dd></div><div class="description-item"><dt>GPS</dt><dd>${escapeHTML(item.lng || "—")}，${escapeHTML(item.lat || "—")}</dd></div></dl></section>` : "", hrbpField = hasHrbp(item.type) ? `<div class="description-item"><dt>HRBP</dt><dd>${escapeHTML(personText(item.hrbpId))}</dd></div>` : "", stopCheckSection = !readOnly && ["pending", "active"].includes(item.status) ? `<section class="dialog-section"><h3 class="section-title">停用检查</h3><div class="impact-box">待生效或生效中的下级组织：${stats.childCount}个；在职人员：${stats.employeeCount}人；生效编制：${stats.headcountCount}条。</div></section>` : ""; byId("detailTitle").textContent = `${item.name} — 组织详情`; byId("detailBody").innerHTML = `<section class="dialog-section"><h3 class="section-title">基本信息</h3><dl class="description-grid"><div class="description-item"><dt>组织名称</dt><dd>${escapeHTML(item.name)}</dd></div><div class="description-item"><dt>组织编码</dt><dd class="mono">${escapeHTML(item.code)}</dd></div><div class="description-item"><dt>组织类型</dt><dd>${typeText(item.type)}</dd></div><div class="description-item"><dt>上级组织</dt><dd>${escapeHTML(itemById(item.parentId)?.name || "—")}</dd></div><div class="description-item"><dt>负责人</dt><dd>${escapeHTML(personText(item.leaderId))}</dd></div>${hrbpField}<div class="description-item"><dt>生效时间</dt><dd>${escapeHTML(formatTime(item.effective))}</dd></div><div class="description-item"><dt>失效时间</dt><dd>${escapeHTML(formatTime(item.expiry))}</dd></div><div class="description-item"><dt>状态</dt><dd>${statusTag(item.status)}</dd></div><div class="description-item"><dt>备注</dt><dd>${escapeHTML(item.remark || "—")}</dd></div></dl></section>${storeSection}${stopCheckSection}`; const canChange = !readOnly && item.status !== "expired", statusButton = item.status === "stopped" ? `<button class="button primary" type="button" data-detail-enable="${item.id}">启用</button>` : item.status !== "expired" ? `<button class="button danger" type="button" data-detail-stop="${item.id}">停用</button>` : ""; byId("detailFooter").innerHTML = `${canChange ? `<button class="button" type="button" data-detail-move="${item.id}">调整层级</button><button class="button" type="button" data-detail-edit="${item.id}">编辑</button>${statusButton}` : ""}<button class="button" type="button" data-close="detailDialog">关闭</button>`; openDialog("detailDialog"); }
+    function openDetail(id) {
+      const item = itemById(id);
+      if (!item) return;
+      const readOnly = Boolean(state.historyId), stats = readOnly ? null : scopeStats(item.id);
+      const storeSection = item.type === "store" ? `<section class="dialog-section"><h3 class="section-title">门店信息</h3><dl class="description-grid">
+        <div class="description-item"><dt>门店编码</dt><dd class="mono">${escapeHTML(item.storeCode || "—")}</dd></div><div class="description-item"><dt>门店性质</dt><dd>${natureText(item.storeNature)}</dd></div>
+        <div class="description-item"><dt>门店等级</dt><dd>${escapeHTML(item.storeGrade || "—")}</dd></div><div class="description-item"><dt>门店类别</dt><dd>${categoryText(item.storeCategory)}</dd></div>
+        <div class="description-item"><dt>门店面积</dt><dd>${item.storeArea !== "" && item.storeArea != null ? `${escapeHTML(item.storeArea)} ㎡` : "—"}</dd></div><div class="description-item"><dt>年营业额预估</dt><dd>${item.annualRevenue !== "" && item.annualRevenue != null ? `${escapeHTML(item.annualRevenue)} 万元` : "—"}</dd></div>
+        <div class="description-item"><dt>开店日期</dt><dd>${escapeHTML(item.openDate || "—")}</dd></div><div class="description-item"><dt>闭店日期</dt><dd>${escapeHTML(item.closeDate || "—")}</dd></div>
+        <div class="description-item"><dt>省市区</dt><dd>${escapeHTML([item.province, item.city, item.district].filter(Boolean).join(" / ") || "—")}</dd></div><div class="description-item"><dt>门店具体地址</dt><dd>${escapeHTML(item.address || "—")}</dd></div>
+        <div class="description-item"><dt>GPS</dt><dd>${escapeHTML(item.lng || "—")}，${escapeHTML(item.lat || "—")}</dd></div><div class="description-item"><dt>开店协同交房表状态</dt><dd>${escapeHTML(item.handoverStatus || "—")}</dd></div>
+        <div class="description-item full"><dt>加盟商转出情况</dt><dd>${escapeHTML(item.franchiseTransfer || "—")}</dd></div><div class="description-item full"><dt>改造、移位续约时间</dt><dd>${escapeHTML(item.renovationRenewal || "—")}</dd></div>
+      </dl></section>` : "";
+      const hrbpField = hasHrbp(item.type) ? `<div class="description-item"><dt>HRBP</dt><dd>${escapeHTML(personText(item.hrbpId))}</dd></div>` : "";
+      const stopCheckSection = !readOnly && ["pending", "active"].includes(item.status) ? `<section class="dialog-section"><h3 class="section-title">停用检查</h3><div class="impact-box">待生效或生效中的下级组织：${stats.childCount}个；在职人员：${stats.employeeCount}人；生效编制：${stats.headcountCount}条。</div></section>` : "";
+      byId("detailTitle").textContent = `${item.name} — 组织详情`;
+      byId("detailBody").innerHTML = `<section class="dialog-section"><h3 class="section-title">基本信息</h3><dl class="description-grid"><div class="description-item"><dt>组织名称</dt><dd>${escapeHTML(item.name)}</dd></div><div class="description-item"><dt>组织编码</dt><dd class="mono">${escapeHTML(item.code)}</dd></div><div class="description-item"><dt>组织类型</dt><dd>${typeText(item.type)}</dd></div><div class="description-item"><dt>上级组织</dt><dd>${escapeHTML(itemById(item.parentId)?.name || "—")}</dd></div><div class="description-item"><dt>负责人</dt><dd>${escapeHTML(personText(item.leaderId))}</dd></div>${hrbpField}<div class="description-item"><dt>生效时间</dt><dd>${escapeHTML(formatTime(item.effective))}</dd></div><div class="description-item"><dt>失效时间</dt><dd>${escapeHTML(formatTime(item.expiry))}</dd></div><div class="description-item"><dt>状态</dt><dd>${statusTag(item.status)}</dd></div><div class="description-item"><dt>备注</dt><dd>${escapeHTML(item.remark || "—")}</dd></div></dl></section>${storeSection}${stopCheckSection}`;
+      const canChange = !readOnly, statusButton = ["stopped", "expired"].includes(item.status) ? `<button class="button primary" type="button" data-detail-enable="${item.id}">启用</button>` : `<button class="button danger" type="button" data-detail-stop="${item.id}">停用</button>`;
+      byId("detailFooter").innerHTML = `${canChange ? `<button class="button" type="button" data-detail-move="${item.id}">调整层级</button><button class="button" type="button" data-detail-edit="${item.id}">编辑</button>${statusButton}` : ""}<button class="button" type="button" data-close="detailDialog">关闭</button>`;
+      openDialog("detailDialog");
+    }
     function openMove(id) { state.movingId = id; const item = organizations.find(row => row.id === id); if (!item) return; byId("moveOrgName").textContent = item.name; configureMoveParentPicker(id, item.type === "company", item.parentId == null ? "__root__" : String(item.parentId)); byId("moveReason").value = ""; byId("moveAttachment").value = ""; byId("moveErrors").hidden = true; updateMoveImpact(); openDialog("moveDialog"); }
-    function updateMoveImpact() { const item = organizations.find(row => row.id === state.movingId), raw = moveParentPickerState.value, target = raw === "__root__" ? null : organizations.find(row => row.id === Number(raw)); if (!item) return; const stats = scopeStats(item.id); byId("moveImpact").innerHTML = `当前上级：<strong>${escapeHTML(itemById(item.parentId, organizations)?.name || "无")}</strong><br>调整后上级：<strong>${escapeHTML(target?.name || "无")}</strong><br>随组织移动的下级组织：<strong>${stats.ids.length - 1}</strong>个<br>当前组织及全部下级在职人员：<strong>${stats.employeeCount}</strong>人`; }
+    function updateMoveImpact() { const item = organizations.find(row => row.id === state.movingId), raw = moveParentPickerState.value, target = raw === "__root__" ? null : organizations.find(row => row.id === Number(raw)); if (!item) return; const stats = scopeStats(item.id); byId("moveImpact").innerHTML = `当前上级：<strong>${escapeHTML(itemById(item.parentId, organizations)?.name || "无")}</strong><br>调整后上级：<strong>${escapeHTML(target?.name || "无")}</strong><br>随组织移动的下级组织：<strong>${stats.ids.length - 1}</strong>个<br>当前组织及全部下级在职人员：<strong>${stats.employeeCount}</strong>人<br>调整成功后写入操作日志；既有快照不回溯，后续快照记录新层级。`; }
     function openStatusAction(id, action) { state.stoppingId = id; state.statusAction = action; const item = organizations.find(row => row.id === id); if (!item) return; const button = byId("confirmStopButton"); if (action === "enable") { const parent = organizations.find(row => row.id === item.parentId), parentBlocked = item.type !== "company" && parent?.status !== "active", expiryBlocked = item.expiry && new Date(item.expiry) <= new Date(); byId("stopTitle").textContent = "启用组织"; byId("stopBody").innerHTML = `<div class="${parentBlocked || expiryBlocked ? "warning-box" : "impact-box"}">直接上级：<strong>${escapeHTML(parent?.name || "无")}</strong><br>生效时间：<strong>${escapeHTML(formatTime(item.effective))}</strong><br>失效时间：<strong>${escapeHTML(formatTime(item.expiry))}</strong><br>${parentBlocked ? "直接上级不是生效中，暂不能启用。" : expiryBlocked ? "失效时间已经到达，请先编辑失效时间。" : "确认后将按有效期重新计算组织状态。"}</div>`; button.textContent = "确认启用"; button.className = "button primary"; button.disabled = parentBlocked || expiryBlocked; } else { const stats = scopeStats(id), blocked = stats.childCount > 0 || stats.employeeCount > 0; byId("stopTitle").textContent = "停用组织"; byId("stopBody").innerHTML = `<div class="${blocked || stats.headcountCount ? "warning-box" : "impact-box"}">待生效或生效中的下级组织：<strong>${stats.childCount}</strong>个<br>在职人员：<strong>${stats.employeeCount}</strong>人<br>生效编制：<strong>${stats.headcountCount}</strong>条<br>${blocked ? "请先处理下级组织和在职人员，当前不能停用。" : stats.headcountCount ? "存在生效编制，停用组织不会改变编制状态，仍可继续确认。" : "停用后保留历史架构和操作日志。"}</div>`; button.textContent = "确认停用"; button.className = "button danger"; button.disabled = blocked; } openDialog("stopDialog"); }
-    function createAttachment(file) { return file ? { name: file.name, type: file.type || "application/octet-stream", url: URL.createObjectURL(file) } : null; }
-    function openAttachment(attachment) { if (!attachment) return; if (!attachment.url && attachment.content) attachment.url = URL.createObjectURL(new Blob([attachment.content], { type: attachment.type || "text/plain" })); byId("attachmentTitle").textContent = `查看附件 — ${attachment.name}`; const url = attachment.url || "", type = attachment.type || ""; if (url && type.startsWith("image/")) byId("attachmentBody").innerHTML = `<img class="attachment-image" src="${escapeHTML(url)}" alt="${escapeHTML(attachment.name)}" />`; else if (url && (type === "application/pdf" || type.startsWith("text/"))) byId("attachmentBody").innerHTML = `<iframe class="attachment-preview" src="${escapeHTML(url)}" title="${escapeHTML(attachment.name)}"></iframe>`; else byId("attachmentBody").innerHTML = `<div class="impact-box">附件：<strong>${escapeHTML(attachment.name)}</strong><br>该文件类型暂不支持在线预览，可使用下方按钮下载查看。</div>`; byId("attachmentDownload").hidden = !url; byId("attachmentDownload").href = url || "#"; byId("attachmentDownload").download = attachment.name; openDialog("attachmentDialog"); }
+    function createAttachment(file) { return new Promise(resolve => { if (!file) return resolve(null); const reader = new FileReader(); reader.addEventListener("load", () => resolve({ name: file.name, type: file.type || "application/octet-stream", url: reader.result })); reader.addEventListener("error", () => resolve({ name: file.name, type: file.type || "application/octet-stream", content: "文件内容读取失败，仅保留文件名。" })); reader.readAsDataURL(file); }); }
+    function openAttachment(attachment) { if (!attachment) return; if (attachment.content && (!attachment.url || attachment.url.startsWith("blob:"))) attachment.url = URL.createObjectURL(new Blob([attachment.content], { type: attachment.type || "text/plain" })); byId("attachmentTitle").textContent = `查看附件 — ${attachment.name}`; const url = attachment.url || "", type = attachment.type || ""; if (url && type.startsWith("image/")) byId("attachmentBody").innerHTML = `<img class="attachment-image" src="${escapeHTML(url)}" alt="${escapeHTML(attachment.name)}" />`; else if (url && (type === "application/pdf" || type.startsWith("text/"))) byId("attachmentBody").innerHTML = `<iframe class="attachment-preview" src="${escapeHTML(url)}" title="${escapeHTML(attachment.name)}"></iframe>`; else byId("attachmentBody").innerHTML = `<div class="impact-box">附件：<strong>${escapeHTML(attachment.name)}</strong><br>该文件类型暂不支持在线预览，可使用下方按钮下载查看。</div>`; byId("attachmentDownload").hidden = !url; byId("attachmentDownload").href = url || "#"; byId("attachmentDownload").download = attachment.name; openDialog("attachmentDialog"); }
     function renderHistory() { byId("historyBody").innerHTML = [...snapshots].sort((a, b) => b.time.localeCompare(a.time)).map(item => `<tr><td>${escapeHTML(item.time)}</td><td>${escapeHTML(item.type)}</td><td>${escapeHTML(item.note)}</td><td>${escapeHTML(item.creator)}</td><td>${item.attachment ? `<button class="cell-link" type="button" data-snapshot-attachment="${item.id}">查看</button>` : "—"}</td><td><button class="cell-link" type="button" data-history="${item.id}">查看架构</button></td></tr>`).join(""); }
     function renderLogs() { byId("logsBody").innerHTML = [...logs].sort((a, b) => b.time.localeCompare(a.time)).map(item => `<tr><td>${escapeHTML(item.time)}</td><td>${escapeHTML(item.operator)}</td><td>${escapeHTML(item.action)}</td><td>${escapeHTML(item.target)}</td><td>${escapeHTML(item.note)}</td><td>${item.attachment ? `<button class="cell-link" type="button" data-log-attachment="${logs.indexOf(item)}">查看</button>` : "—"}</td></tr>`).join(""); }
     function download(filename, content) { const url = URL.createObjectURL(new Blob(["\ufeff" + content], { type: "text/csv;charset=utf-8" })); const link = document.createElement("a"); link.href = url; link.download = filename; link.click(); URL.revokeObjectURL(url); }
+    function ancestorOfType(item, type, data = currentData()) { const visited = new Set(); let current = item; while (current && !visited.has(current.id)) { if (current.type === type) return current; visited.add(current.id); current = data.find(row => row.id === current.parentId); } return null; }
+    function exportOrganizationResult() {
+      const result = rows(), data = currentData();
+      const exportRows = result.map(item => ({ item, parent: data.find(row => row.id === item.parentId), area: ancestorOfType(item, "area", data), region: ancestorOfType(item, "region", data) }));
+      const cleanPerson = value => value && personText(value) !== "—" ? personText(value) : "";
+      downloadUpdateWorkbook("组织架构-当前结果.xls", {
+        sheetName: "组织架构",
+        matchKey: "组织编码",
+        columns: [
+          { label: "组织名称", value: row => row.item.name },
+          { label: "组织编码", readonly: true, value: row => row.item.code },
+          { label: "组织类型", readonly: true, value: row => typeText(row.item.type) },
+          { label: "上级组织编码", readonly: true, value: row => row.parent?.code || "" },
+          { label: "上级组织名称", readonly: true, value: row => row.parent?.name || "" },
+          { label: "组织负责人", value: row => cleanPerson(row.item.leaderId) },
+          { label: "HRBP", value: row => hasHrbp(row.item.type) ? cleanPerson(row.item.hrbpId) : "" },
+          { label: "生效时间", value: row => row.item.effective || "" },
+          { label: "失效时间", value: row => row.item.expiry || "" },
+          { label: "门店编码", value: row => row.item.storeCode || "" },
+          { label: "门店性质", value: row => natureText(row.item.storeNature) === "—" ? "" : natureText(row.item.storeNature) },
+          { label: "门店面积（㎡）", value: row => row.item.storeArea || "" },
+          { label: "门店年营业额预估（万元）", value: row => row.item.annualRevenue || "" },
+          { label: "门店等级", value: row => row.item.storeGrade || "" },
+          { label: "门店类别", value: row => categoryText(row.item.storeCategory) === "—" ? "" : categoryText(row.item.storeCategory) },
+          { label: "加盟商转出情况", value: row => row.item.franchiseTransfer || "" },
+          { label: "改造、移位续约时间", value: row => row.item.renovationRenewal || "" },
+          { label: "开店协同交房表状态", value: row => row.item.handoverStatus || "" },
+          { label: "开店日期", value: row => row.item.openDate || "" },
+          { label: "闭店日期", value: row => row.item.closeDate || "" },
+          { label: "省份", value: row => row.item.province || "" },
+          { label: "城市", value: row => row.item.city || "" },
+          { label: "区县", value: row => row.item.district || "" },
+          { label: "门店具体地址", value: row => row.item.address || "" },
+          { label: "经度", value: row => row.item.lng || "" },
+          { label: "纬度", value: row => row.item.lat || "" },
+          { label: "备注", value: row => row.item.remark || "" },
+          { label: "组织状态", readonly: true, value: row => statusTagText(row.item.status) },
+          { label: "所属大区", readonly: true, value: row => row.item.type === "store" ? row.area?.name || "" : "" },
+          { label: "大区负责人", readonly: true, value: row => row.item.type === "store" ? cleanPerson(row.area?.leaderId) : "" },
+          { label: "所属小区", readonly: true, value: row => row.item.type === "store" ? row.region?.name || "" : "" },
+          { label: "小区负责人", readonly: true, value: row => row.item.type === "store" ? cleanPerson(row.region?.leaderId) : "" }
+        ],
+        rows: exportRows,
+        instructions: ["组织类型、上级组织和组织状态不能通过导入更新。", "全部状态的组织均可导入更新；已停用、已失效组织更新后保持原状态，如需恢复使用须在页面显式启用。"]
+      });
+      showToast(`已导出${result.length}条组织`);
+    }
+    function createImportTemplate() {
+      downloadCreateWorkbook("组织导入新增空白模板.xls", {
+        sheetName: "组织新增",
+        columns: [
+          { label: "组织编码", required: true }, { label: "组织名称", required: true }, { label: "组织类型", required: true }, { label: "上级组织编码" }, { label: "组织负责人" }, { label: "HRBP" }, { label: "生效时间", required: true }, { label: "失效时间" },
+          { label: "门店编码" }, { label: "门店性质" }, { label: "门店面积（㎡）" }, { label: "门店年营业额预估（万元）" }, { label: "门店等级" }, { label: "门店类别" }, { label: "加盟商转出情况" }, { label: "改造、移位续约时间" }, { label: "开店协同交房表状态" },
+          { label: "开店日期" }, { label: "闭店日期" }, { label: "省份" }, { label: "城市" }, { label: "区县" }, { label: "门店具体地址" }, { label: "经度" }, { label: "纬度" }, { label: "备注" }
+        ],
+        instructions: ["组织编码必须全局唯一；门店编码选填，填写后必须全局唯一。", "上级组织编码仅公司类型可留空，其他组织类型必须填写。", "门店专属字段仅在组织类型为门店时填写。"]
+      });
+      showToast("已下载组织导入新增模板");
+    }
+    function configureImportMode(mode) {
+      state.importMode = mode;
+      state.importGeneration += 1;
+      state.importReady = false;
+      state.importFileName = "";
+      state.importAttachment = null;
+      state.importFailureContent = "";
+      byId("importFile").value = "";
+      byId("importFileName").textContent = "尚未选择文件";
+      byId("confirmImportButton").disabled = true;
+      byId("confirmImportButton").textContent = "确认导入";
+      byId("importDialog").querySelector(".dialog-footer [data-close]").textContent = "取消";
+      byId("importPreview").innerHTML = "";
+      document.querySelectorAll("[data-import-mode]").forEach(tab => tab.classList.toggle("active", tab.dataset.importMode === mode));
+      const updating = mode === "update";
+      byId("downloadTemplateButton").hidden = updating;
+      byId("exportForUpdateButton").hidden = !updating;
+      byId("importDescription").innerHTML = updating ? "先导出当前结果，在导出文件中修改可编辑字段后重新导入；不另外提供更新模板。" : "下载新增空白模板，填写后导入；组织编码已存在的数据不会被覆盖。";
+      byId("importSteps").innerHTML = updating ? "<li>以组织编码匹配已有组织，不存在的组织该行失败。</li><li>更新采用整行覆盖，可编辑字段留空会清空系统原值。</li><li>待生效、生效中、已停用、已失效组织均可更新；已停用、已失效组织更新后保持原状态，如需恢复使用须在页面执行启用。</li>" : "<li>组织编码全局唯一；门店编码填写后需全局唯一。</li><li>通过上级组织编码建立层级，门店不能作为上级组织。</li><li>门店面积、年营业额预估为非负数，最多保留两位小数。</li>";
+      byId("importUploadText").textContent = updating ? "选择修改后的组织导出 Excel 文件" : "选择填写后的新增 Excel 文件";
+      byId("readonlyFieldList").textContent = updating ? "导出文件中组织编码、组织类型、上级组织、组织状态及所属大区/小区等列使用灰色表头并标记“不可修改”；如被修改，该行导入失败。" : "新增模板包含全部可维护的组织与门店字段。";
+    }
 
     byId("treeRoot").addEventListener("click", event => { const toggle = event.target.closest("[data-toggle]"), select = event.target.closest("[data-select]"); if (toggle) { const id = Number(toggle.dataset.toggle); state.expanded.has(id) ? state.expanded.delete(id) : state.expanded.add(id); renderTree(); } if (select) { state.selectedId = select.dataset.select ? Number(select.dataset.select) : null; renderAll(); } });
     byId("treeSearch").addEventListener("input", renderTree); byId("expandButton").addEventListener("click", () => { const data = currentData().filter(item => item.status === "active"); data.forEach(item => { if (data.some(child => child.parentId === item.id)) state.expanded.add(item.id); }); renderTree(); }); byId("collapseButton").addEventListener("click", () => { state.expanded.clear(); renderTree(); });
-    byId("filterForm").addEventListener("submit", event => { event.preventDefault(); state.filters = { keyword: byId("filterKeyword").value.trim(), storeCode: byId("filterStoreCode").value.trim(), type: byId("filterType").value, status: byId("filterStatus").value }; renderTable(); }); byId("filterForm").addEventListener("reset", () => setTimeout(() => { state.filters = { keyword: "", storeCode: "", type: "", status: "" }; state.selectedId = null; renderAll(); }, 0));
+    byId("filterForm").addEventListener("submit", event => { event.preventDefault(); state.filters = { keyword: byId("filterKeyword").value.trim(), storeCode: byId("filterStoreCode").value.trim(), type: byId("filterType").value, status: byId("filterStatus").value, storeGrade: byId("filterStoreGrade").value, storeCategory: byId("filterStoreCategory").value }; renderTable(); }); byId("filterForm").addEventListener("reset", () => setTimeout(() => { state.filters = { keyword: "", storeCode: "", type: "", status: "", storeGrade: "", storeCategory: "" }; state.selectedId = null; renderAll(); }, 0));
     byId("addButton").addEventListener("click", () => openForm()); byId("orgType").addEventListener("change", toggleConditionalFields); byId("orgParentTrigger").addEventListener("click", () => { const dropdown = byId("orgParentDropdown"), opening = dropdown.hidden; dropdown.hidden = !opening; byId("orgParentTrigger").setAttribute("aria-expanded", String(opening)); if (opening) { byId("orgParentSearch").value = ""; renderParentPicker(); byId("orgParentSearch").focus(); } }); byId("orgParentSearch").addEventListener("input", event => renderParentPicker(event.target.value)); byId("orgParentSearch").addEventListener("keydown", event => { if (event.key === "Escape") { closeParentPicker(); byId("orgParentTrigger").focus(); } }); byId("orgParentOptions").addEventListener("click", event => { const option = event.target.closest("[data-parent-value]"); if (!option) return; setParentPickerValue(option.dataset.parentValue); closeParentPicker(); byId("orgParentTrigger").focus(); }); document.addEventListener("click", event => { if (!event.target.closest("#orgParentPicker")) closeParentPicker(); }); byId("storeProvince").addEventListener("change", () => fillAddressOptions(byId("storeProvince").value)); byId("storeCity").addEventListener("change", () => fillAddressOptions(byId("storeProvince").value, byId("storeCity").value));
     byId("moveParentTrigger").addEventListener("click", () => { const dropdown = byId("moveParentDropdown"), opening = dropdown.hidden; dropdown.hidden = !opening; byId("moveParentTrigger").setAttribute("aria-expanded", String(opening)); if (opening) { byId("moveParentSearch").value = ""; renderMoveParentPicker(); byId("moveParentSearch").focus(); } }); byId("moveParentSearch").addEventListener("input", event => renderMoveParentPicker(event.target.value)); byId("moveParentSearch").addEventListener("keydown", event => { if (event.key === "Escape") { closeMoveParentPicker(); byId("moveParentTrigger").focus(); } }); byId("moveParentOptions").addEventListener("click", event => { const option = event.target.closest("[data-move-parent-value]"); if (!option) return; setMoveParentPickerValue(option.dataset.moveParentValue); closeMoveParentPicker(); byId("moveParentTrigger").focus(); }); document.addEventListener("click", event => { if (!event.target.closest("#moveParentPicker")) closeMoveParentPicker(); });
-    byId("recognizeAddressButton").addEventListener("click", () => { const address = byId("storeAddress").value.trim(); if (!address) return showToast("请先填写门店具体地址", "error"); if (address.includes("上海")) fillAddressOptions("上海市", "上海市", address.includes("静安") ? "静安区" : address.includes("徐汇") ? "徐汇区" : "浦东新区"); else if (address.includes("杭州") || address.includes("浙江")) fillAddressOptions("浙江省", "杭州市", "上城区"); else if (address.includes("南京") || address.includes("江苏")) fillAddressOptions("江苏省", "南京市", "秦淮区"); else fillAddressOptions("上海市", "上海市", "浦东新区"); showToast("已识别省市区，可继续手工修改"); });
+    byId("recognizeAddressButton").addEventListener("click", () => { const address = byId("storeAddress").value.trim(); if (!address) return showToast("请先填写门店具体地址", "error"); if (address.includes("上海")) fillAddressOptions("上海市", "上海市", address.includes("静安") ? "静安区" : address.includes("徐汇") ? "徐汇区" : "浦东新区"); else if (address.includes("杭州") || address.includes("浙江")) fillAddressOptions("浙江省", "杭州市", "上城区"); else if (address.includes("南京") || address.includes("江苏")) fillAddressOptions("江苏省", "南京市", "秦淮区"); else return showToast("未识别出省市区，请手工选择", "error"); showToast("已识别省市区，可继续手工修改"); });
     byId("tableBody").addEventListener("click", event => { const button = event.target.closest("[data-action]"); if (!button || button.disabled) return; const id = Number(button.dataset.id); if (button.dataset.action === "detail") openDetail(id); if (button.dataset.action === "edit") openForm(id); if (button.dataset.action === "move") openMove(id); if (button.dataset.action === "stop") openStatusAction(id, "stop"); if (button.dataset.action === "enable") openStatusAction(id, "enable"); });
     byId("detailFooter").addEventListener("click", event => { const edit = event.target.closest("[data-detail-edit]"), move = event.target.closest("[data-detail-move]"), stop = event.target.closest("[data-detail-stop]"), enable = event.target.closest("[data-detail-enable]"); if (edit) { closeDialog("detailDialog"); openForm(Number(edit.dataset.detailEdit)); } if (move) { closeDialog("detailDialog"); openMove(Number(move.dataset.detailMove)); } if (stop) { closeDialog("detailDialog"); openStatusAction(Number(stop.dataset.detailStop), "stop"); } if (enable) { closeDialog("detailDialog"); openStatusAction(Number(enable.dataset.detailEnable), "enable"); } });
-    byId("orgForm").addEventListener("submit", event => { event.preventDefault(); const existing = organizations.find(item => item.id === state.editingId), name = byId("orgName").value.trim(), code = byId("orgCode").value.trim(), type = byId("orgType").value, rawParent = parentPickerState.value, parentId = rawParent === "__root__" ? null : Number(rawParent), parent = organizations.find(item => item.id === parentId), effective = byId("orgEffective").value, expiry = byId("orgExpiry").value, storeCode = byId("storeCode").value.trim(), errors = []; if (!name) errors.push("请输入组织名称"); if (!code) errors.push("请输入组织编码"); if (organizations.some(item => normalized(item.code) === normalized(code) && item.id !== state.editingId)) errors.push("组织编码已存在"); if (type !== "company" && !parentId) errors.push("非公司组织必须选择上级组织"); if (parent?.type === "store") errors.push("门店不能作为上级组织"); if (organizations.some(item => normalized(item.name) === normalized(name) && item.parentId === parentId && item.id !== state.editingId)) errors.push("同一上级组织下不能存在同名组织"); if (!effective) errors.push("请选择生效时间"); if (expiry && expiry <= effective) errors.push("失效时间必须晚于生效时间"); if (parent && !intervalCovers(parent, { effective, expiry })) errors.push("组织有效期必须在上级组织有效期范围内"); if (existing && descendantIntervalErrors(existing, { effective, expiry }).length) errors.push("当前有效期不能覆盖全部下级组织"); if (type === "store" && storeCode && organizations.some(item => normalized(item.storeCode) === normalized(storeCode) && item.id !== state.editingId)) errors.push("门店编码已存在"); const openDate = byId("openDate").value, closeDate = byId("closeDate").value; if (closeDate && openDate && closeDate < openDate) errors.push("闭店日期不能早于开店日期"); byId("formErrors").innerHTML = errors.map(error => `<div>• ${escapeHTML(error)}</div>`).join(""); byId("formErrors").hidden = !errors.length; if (errors.length) return; const data = { name, code, type, parentId, leaderId: byId("orgLeader").value, hrbpId: hasHrbp(type) ? byId("orgHrbp").value : "", effective, expiry, storeCode: type === "store" ? storeCode : "", storeNature: type === "store" ? byId("storeNature").value : "", socialSecurity: type === "store" ? byId("socialSecurity").value : "", openDate: type === "store" ? openDate : "", closeDate: type === "store" ? closeDate : "", province: type === "store" ? byId("storeProvince").value : "", city: type === "store" ? byId("storeCity").value : "", district: type === "store" ? byId("storeDistrict").value : "", address: type === "store" ? byId("storeAddress").value.trim() : "", lng: type === "store" ? byId("storeLng").value.trim() : "", lat: type === "store" ? byId("storeLat").value.trim() : "", remark: byId("orgRemark").value.trim() }; if (existing) { const nextStatus = existing.status === "stopped" ? "stopped" : lifecycleStatus({ ...existing, ...data }), changes = [...organizationChanges(existing, data), fieldChange("组织状态", existing.status, nextStatus, statusTagText)].filter(Boolean); Object.assign(existing, data, { status: nextStatus }); if (changes.length) { addLog("编辑组织", name, changes.join("；")); showToast("组织已保存"); } else showToast("未检测到字段变更"); } else { const item = { id: Math.max(...organizations.map(row => row.id)) + 1, ...data, status: "active", employees: 0 }; item.status = lifecycleStatus(item); organizations.push(item); if (parentId) state.expanded.add(parentId); addLog("新增组织", name, `组织编码：未填写 → ${code}；组织状态：未填写 → ${statusTagText(item.status)}`); showToast("组织已新增"); } Shared.save(); closeDialog("orgDialog"); renderAll(); });
-    byId("moveForm").addEventListener("submit", event => { event.preventDefault(); const item = organizations.find(row => row.id === state.movingId), raw = moveParentPickerState.value, parentId = raw === "__root__" ? null : Number(raw), parent = organizations.find(row => row.id === parentId), reason = byId("moveReason").value.trim(), errors = []; if (!raw) errors.push("请选择调整后上级组织"); if (item?.type !== "company" && parentId == null) errors.push("非公司组织不能调整为顶层组织"); if (parent?.type === "store") errors.push("门店不能作为上级组织"); if (parentId === item?.parentId) errors.push("调整后上级组织与当前上级相同"); if (item && organizations.some(row => row.parentId === parentId && row.id !== item.id && normalized(row.name) === normalized(item.name))) errors.push("调整后上级组织下已存在同名组织"); if (item && parent && [item, ...descendantIds(item.id).map(id => organizations.find(row => row.id === id)).filter(Boolean)].some(row => !intervalCovers(parent, row))) errors.push("调整后上级组织的有效期不能覆盖当前组织及全部下级"); if (!reason) errors.push("请输入调整原因"); byId("moveErrors").innerHTML = errors.map(error => `<div>• ${escapeHTML(error)}</div>`).join(""); byId("moveErrors").hidden = !errors.length; if (errors.length || !item) return; const oldParent = itemById(item.parentId, organizations)?.name || "无上级组织", newParent = itemById(parentId, organizations)?.name || "无上级组织", attachment = createAttachment(byId("moveAttachment").files[0]); item.parentId = parentId; if (parentId) state.expanded.add(parentId); addLog("调整组织层级", item.name, `上级组织：${oldParent} → ${newParent}；调整原因：${reason}`, attachment); Shared.save(); closeDialog("moveDialog"); renderAll(); showToast("组织层级已立即调整"); });
+    byId("orgForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const existing = organizations.find(item => item.id === state.editingId), name = byId("orgName").value.trim(), code = byId("orgCode").value.trim(), type = byId("orgType").value, rawParent = parentPickerState.value, parentId = rawParent === "__root__" ? null : Number(rawParent), parent = organizations.find(item => item.id === parentId), effective = byId("orgEffective").value, expiry = byId("orgExpiry").value, storeCode = byId("storeCode").value.trim(), errors = [];
+      if (!name) errors.push("请输入组织名称");
+      if (!code) errors.push("请输入组织编码");
+      if (organizations.some(item => normalized(item.code) === normalized(code) && item.id !== state.editingId)) errors.push("组织编码已存在");
+      if (type !== "company" && !parentId) errors.push("非公司组织必须选择上级组织");
+      if (parent?.type === "store") errors.push("门店不能作为上级组织");
+      if (organizations.some(item => normalized(item.name) === normalized(name) && item.parentId === parentId && item.id !== state.editingId)) errors.push("同一上级组织下不能存在同名组织");
+      if (!effective) errors.push("请选择生效时间");
+      if (expiry && expiry <= effective) errors.push("失效时间必须晚于生效时间");
+      if (parent && !intervalCovers(parent, { effective, expiry })) errors.push("组织有效期必须在上级组织有效期范围内");
+      if (existing && descendantIntervalErrors(existing, { effective, expiry }).length) errors.push("当前有效期不能覆盖全部下级组织");
+      if (type === "store" && storeCode && organizations.some(item => normalized(item.storeCode) === normalized(storeCode) && item.id !== state.editingId)) errors.push("门店编码已存在");
+      const openDate = byId("openDate").value, closeDate = byId("closeDate").value, storeArea = byId("storeArea").value.trim(), annualRevenue = byId("annualRevenue").value.trim();
+      if (closeDate && openDate && closeDate < openDate) errors.push("闭店日期不能早于开店日期");
+      if (type === "store" && storeArea && (!/^\d+(\.\d{1,2})?$/.test(storeArea) || Number(storeArea) < 0)) errors.push("门店面积必须为非负数，最多保留两位小数");
+      if (type === "store" && annualRevenue && (!/^\d+(\.\d{1,2})?$/.test(annualRevenue) || Number(annualRevenue) < 0)) errors.push("门店年营业额预估必须为非负数，最多保留两位小数");
+      const longitude = byId("storeLng").value.trim(), latitude = byId("storeLat").value.trim(), coordinatePattern = /^-?\d+(\.\d+)?$/;
+      if (type === "store" && longitude && !coordinatePattern.test(longitude)) errors.push("经度必须填写数值");
+      if (type === "store" && latitude && !coordinatePattern.test(latitude)) errors.push("纬度必须填写数值");
+      byId("formErrors").innerHTML = errors.map(error => `<div>• ${escapeHTML(error)}</div>`).join("");
+      byId("formErrors").hidden = !errors.length;
+      if (errors.length) return;
+      const data = {
+        name, code, type, parentId, leaderId: byId("orgLeader").value, hrbpId: hasHrbp(type) ? byId("orgHrbp").value : "", effective, expiry,
+        storeCode: type === "store" ? storeCode : "", storeNature: type === "store" ? byId("storeNature").value : "", storeArea: type === "store" ? storeArea : "", annualRevenue: type === "store" ? annualRevenue : "", storeGrade: type === "store" ? byId("storeGrade").value : "", storeCategory: type === "store" ? byId("storeCategory").value : "",
+        openDate: type === "store" ? openDate : "", closeDate: type === "store" ? closeDate : "", province: type === "store" ? byId("storeProvince").value : "", city: type === "store" ? byId("storeCity").value : "", district: type === "store" ? byId("storeDistrict").value : "", address: type === "store" ? byId("storeAddress").value.trim() : "", lng: type === "store" ? byId("storeLng").value.trim() : "", lat: type === "store" ? byId("storeLat").value.trim() : "",
+        franchiseTransfer: type === "store" ? byId("franchiseTransfer").value.trim() : "", renovationRenewal: type === "store" ? byId("renovationRenewal").value.trim() : "", handoverStatus: type === "store" ? byId("handoverStatus").value.trim() : "", remark: byId("orgRemark").value.trim()
+      };
+      if (existing) {
+        const nextStatus = ["stopped", "expired"].includes(existing.status) ? existing.status : lifecycleStatus({ ...existing, ...data }), changes = [...organizationChanges(existing, data), fieldChange("组织状态", existing.status, nextStatus, statusTagText)].filter(Boolean);
+        Object.assign(existing, data, { status: nextStatus });
+        if (changes.length) { addLog("编辑组织", name, changes.join("；")); showToast(existing.status === "expired" ? "组织已保存，如需恢复使用请再执行启用" : "组织已保存"); } else showToast("未检测到字段变更");
+      } else {
+        const item = { id: Math.max(...organizations.map(row => row.id)) + 1, ...data, status: "active", employees: 0 };
+        item.status = lifecycleStatus(item);
+        organizations.push(item);
+        if (parentId) state.expanded.add(parentId);
+        const creationChanges = [fieldChange("组织编码", "", code), fieldChange("组织类型", "", typeText(type)), fieldChange("上级组织", "", parent?.name || ""), ...organizationChanges({}, data), fieldChange("组织状态", "", item.status, statusTagText)].filter(Boolean);
+        addLog("新增组织", name, creationChanges.join("；"));
+        showToast("组织已新增");
+      }
+      Shared.save(); closeDialog("orgDialog"); renderAll();
+    });
+    byId("moveForm").addEventListener("submit", async event => { event.preventDefault(); const item = organizations.find(row => row.id === state.movingId), raw = moveParentPickerState.value, parentId = raw === "__root__" ? null : Number(raw), parent = organizations.find(row => row.id === parentId), reason = byId("moveReason").value.trim(), errors = []; if (!raw) errors.push("请选择调整后上级组织"); if (item?.type !== "company" && parentId == null) errors.push("非公司组织不能调整为顶层组织"); if (parent?.type === "store") errors.push("门店不能作为上级组织"); if (parentId === item?.parentId) errors.push("调整后上级组织与当前上级相同"); if (item && organizations.some(row => row.parentId === parentId && row.id !== item.id && normalized(row.name) === normalized(item.name))) errors.push("调整后上级组织下已存在同名组织"); if (item && parent && [item, ...descendantIds(item.id).map(id => organizations.find(row => row.id === id)).filter(Boolean)].some(row => !intervalCovers(parent, row))) errors.push("调整后上级组织的有效期不能覆盖当前组织及全部下级"); if (!reason) errors.push("请输入调整原因"); byId("moveErrors").innerHTML = errors.map(error => `<div>• ${escapeHTML(error)}</div>`).join(""); byId("moveErrors").hidden = !errors.length; if (errors.length || !item) return; const oldParent = itemById(item.parentId, organizations)?.name || "无上级组织", newParent = itemById(parentId, organizations)?.name || "无上级组织", attachment = await createAttachment(byId("moveAttachment").files[0]); item.parentId = parentId; if (parentId) state.expanded.add(parentId); addLog("调整组织层级", item.name, `上级组织：${oldParent} → ${newParent}；调整原因：${reason}`, attachment); Shared.save(); closeDialog("moveDialog"); renderAll(); showToast("组织层级已立即调整"); });
     byId("confirmStopButton").addEventListener("click", () => { const item = organizations.find(row => row.id === state.stoppingId); if (!item) return; const oldStatus = item.status; item.status = state.statusAction === "enable" ? lifecycleStatus({ ...item, status: "active" }) : "stopped"; addLog(state.statusAction === "enable" ? "启用组织" : "停用组织", item.name, `组织状态：${statusTagText(oldStatus)} → ${statusTagText(item.status)}`); Shared.save(); closeDialog("stopDialog"); renderAll(); showToast(state.statusAction === "enable" ? "组织已启用" : "组织已停用"); });
-    byId("snapshotButton").addEventListener("click", () => { byId("snapshotTime").value = Shared.inputDateTime(); byId("snapshotNote").value = ""; byId("snapshotAttachment").value = ""; openDialog("snapshotDialog"); }); byId("snapshotForm").addEventListener("submit", event => { event.preventDefault(); const time = byId("snapshotTime").value, note = byId("snapshotNote").value.trim(); if (!note) return showToast("请填写快照说明", "error"); const id = `S${Date.now()}`, attachment = createAttachment(byId("snapshotAttachment").files[0]); snapshots.push({ id, time: time.replace("T", " "), type: "手工快照", note, creator: "张明", attachment, data: clone(organizations) }); addLog("生成快照", "全部组织", `快照说明：未填写 → ${note}`, attachment); Shared.save(); closeDialog("snapshotDialog"); showToast("组织快照已生成"); });
+    byId("snapshotButton").addEventListener("click", () => { byId("snapshotTime").value = Shared.inputDateTime(); byId("snapshotNote").value = ""; byId("snapshotAttachment").value = ""; openDialog("snapshotDialog"); }); byId("snapshotForm").addEventListener("submit", async event => { event.preventDefault(); const time = byId("snapshotTime").value, note = byId("snapshotNote").value.trim(); if (!note) return showToast("请填写快照说明", "error"); const id = `S${Date.now()}`, attachment = await createAttachment(byId("snapshotAttachment").files[0]); snapshots.push({ id, time: time.replace("T", " "), type: "手工快照", note, creator: "张明", attachment, data: clone(organizations) }); addLog("生成快照", "全部组织", `快照说明：未填写 → ${note}`, attachment); Shared.save(); closeDialog("snapshotDialog"); showToast("组织快照已生成"); });
     byId("historyButton").addEventListener("click", () => { renderHistory(); openDialog("historyDialog"); }); byId("historyBody").addEventListener("click", event => { const attachmentButton = event.target.closest("[data-snapshot-attachment]"); if (attachmentButton) { const snapshot = snapshots.find(item => item.id === attachmentButton.dataset.snapshotAttachment); if (snapshot?.attachment) openAttachment(snapshot.attachment); return; } const button = event.target.closest("[data-history]"); if (!button) return; const snapshot = snapshots.find(item => item.id === button.dataset.history); if (!snapshot?.data) return showToast("该快照缺少架构数据", "error"); state.historyId = snapshot.id; state.selectedId = null; closeDialog("historyDialog"); renderAll(); showToast("已进入历史架构只读模式"); }); byId("exitHistoryButton").addEventListener("click", () => { state.historyId = null; state.selectedId = null; renderAll(); showToast("已返回当前组织架构"); });
     byId("logsButton").addEventListener("click", () => { renderLogs(); openDialog("logsDialog"); }); byId("logsBody").addEventListener("click", event => { const button = event.target.closest("[data-log-attachment]"); if (!button) return; openAttachment(logs[Number(button.dataset.logAttachment)]?.attachment); });
-    byId("importButton").addEventListener("click", () => { state.importMode = "create"; state.importReady = false; byId("confirmImportButton").disabled = true; byId("importPreview").innerHTML = ""; document.querySelectorAll("[data-import-mode]").forEach(button => button.classList.toggle("active", button.dataset.importMode === "create")); byId("importDescription").textContent = "组织编码不存在时新增组织；门店编码可选。"; openDialog("importDialog"); }); document.querySelectorAll("[data-import-mode]").forEach(button => button.addEventListener("click", () => { state.importMode = button.dataset.importMode; state.importReady = false; byId("confirmImportButton").disabled = true; byId("importPreview").innerHTML = ""; document.querySelectorAll("[data-import-mode]").forEach(tab => tab.classList.toggle("active", tab === button)); byId("importDescription").textContent = state.importMode === "create" ? "组织编码不存在时新增组织；通过上级组织编码建立层级。" : "以组织编码匹配现有记录；不更新组织类型和上级组织，已失效组织不可更新。"; })); byId("loadExampleButton").addEventListener("click", () => { state.importReady = true; byId("confirmImportButton").disabled = false; byId("importPreview").innerHTML = `<div class="warning-box mt-16">组织${state.importMode === "create" ? "新增" : "更新"}示例.xlsx：共5条，通过4条，失败1条。失败原因：${state.importMode === "create" ? "组织编码重复" : "目标组织已失效，不允许更新"}。</div>`; }); byId("confirmImportButton").addEventListener("click", () => { if (!state.importReady) return; const action = state.importMode === "create" ? "导入新增" : "导入更新"; addLog(action, "组织架构", "批次结果：成功4条，失败1条"); if (state.importMode === "update") { addLog("导入更新明细", "正大广场店", "门店编码：MG0001 → MG0001A；备注：未填写 → 批量更新示例"); addLog("导入更新失败", "历史测试门店", "失败原因：目标组织已失效，不允许更新"); } Shared.save(); closeDialog("importDialog"); showToast("组织导入完成：成功4条，失败1条"); });
-    byId("downloadTemplateButton").addEventListener("click", () => download(state.importMode === "create" ? "组织导入新增模板.csv" : "组织导入更新模板.csv", "组织编码,组织名称,组织类型,上级组织编码,负责人,HRBP,生效时间,失效时间,门店编码,门店性质,社保类型,开店日期,闭店日期,省份,城市,区县,具体地址,经度,纬度,备注\n"));
-    byId("exportButton").addEventListener("click", () => { const result = rows(); download("组织架构.csv", ["组织名称,组织编码,门店编码,组织类型,负责人,HRBP,上级组织,生效时间,失效时间,状态", ...result.map(item => `${item.name},${item.code},${item.storeCode || ""},${typeText(item.type)},${personText(item.leaderId)},${hasHrbp(item.type) ? personText(item.hrbpId) : ""},${itemById(item.parentId)?.name || ""},${item.effective},${item.expiry},${item.status}`)].join("\n")); showToast(`已导出${result.length}条组织`); });
+    byId("importButton").addEventListener("click", () => { configureImportMode("create"); openDialog("importDialog"); });
+    document.querySelectorAll("[data-import-mode]").forEach(button => button.addEventListener("click", () => configureImportMode(button.dataset.importMode)));
+    function organizationImportCounts() {
+      if (state.importMode === "create") return organizations.some(item => normalized(item.code) === normalized("ORG-STORE-007")) ? { success: 0, failure: 2, unchanged: 0 } : { success: 1, failure: 1, unchanged: 0 };
+      const target = organizations.find(item => normalized(item.code) === normalized("ORG-STORE-006"));
+      const changed = target && (String(target.storeArea) !== "132.00" || target.storeGrade !== "B1" || target.storeCategory !== "areaFlagship" || target.franchiseTransfer !== "");
+      return { success: changed ? 1 : 0, failure: 1, unchanged: changed ? 0 : 1 };
+    }
+    function prepareOrganizationImport(name, attachment) {
+      state.importReady = true; state.importFileName = name; state.importAttachment = attachment || { name, type: "text/plain", content: "组织批量导入示例文件" };
+      const counts = organizationImportCounts();
+      const repeatedCreate = organizations.some(item => normalized(item.code) === normalized("ORG-STORE-007"));
+      state.importFailureContent = state.importMode === "create"
+        ? ["行号,组织编码,字段,失败原因", "5,ORG-STORE-001,组织编码,组织编码已存在", ...(repeatedCreate ? ["4,ORG-STORE-007,组织编码,组织编码已存在"] : [])].join("\n")
+        : ["行号,组织编码,字段,失败原因", "5,ORG-STORE-004,组织类型,不可修改列与系统值不一致"].join("\n");
+      byId("importFileName").textContent = name;
+      byId("confirmImportButton").disabled = false;
+      const failure = state.importMode === "create" ? "存在组织编码重复的新增数据" : "第5行：组织类型为不可修改列，文件值与系统值不一致";
+      byId("importPreview").innerHTML = `<div class="warning-box mt-16">${escapeHTML(state.importFileName)}：共${counts.success + counts.failure + counts.unchanged}条，校验通过可导入${counts.success}条，校验失败${counts.failure}条，无变化${counts.unchanged}条。<br>${failure}。 <button class="cell-link" type="button" id="downloadImportFailureButton">下载失败明细</button></div>`;
+    }
+    byId("importFile").addEventListener("change", async event => {
+      const file = event.target.files[0], mode = state.importMode, generation = ++state.importGeneration;
+      if (!file) return;
+      state.importReady = false; state.importFileName = ""; state.importAttachment = null; state.importFailureContent = "";
+      byId("importFileName").textContent = `正在读取 ${file.name}…`; byId("confirmImportButton").disabled = true; byId("confirmImportButton").textContent = "确认导入"; byId("importDialog").querySelector(".dialog-footer [data-close]").textContent = "取消"; byId("importPreview").innerHTML = "";
+      const attachment = await createAttachment(file);
+      if (generation !== state.importGeneration || mode !== state.importMode) return;
+      prepareOrganizationImport(file.name, attachment);
+    });
+    byId("loadExampleButton").addEventListener("click", () => prepareOrganizationImport(state.importMode === "create" ? "组织导入新增示例.xls" : "组织架构-当前结果-已修改.xls"));
+    byId("importPreview").addEventListener("click", event => { if (!event.target.closest("#downloadImportFailureButton")) return; download("组织导入失败明细.csv", state.importFailureContent); });
+    byId("confirmImportButton").addEventListener("click", () => {
+      if (!state.importReady) return;
+      state.importGeneration += 1;
+      const updating = state.importMode === "update";
+      const attachment = state.importAttachment || { name: state.importFileName || "组织导入文件.xls", type: "text/plain", content: "原型示例：导入文件与批次、逐条变更日志关联。" };
+      let success = 0, failure = 1, unchanged = 0;
+      if (updating) {
+        const target = organizations.find(item => normalized(item.code) === normalized("ORG-STORE-006"));
+        const next = target ? { ...target, storeArea: "132.00", storeGrade: "B1", storeCategory: "areaFlagship", franchiseTransfer: "" } : null;
+        const changes = target && next ? organizationChanges(target, next) : [];
+        if (target && changes.length) {
+          Object.assign(target, next);
+          addLog("导入更新明细", target.name, `${changes.join("；")}；操作来源：导入更新（整行覆盖）`, attachment); success += 1;
+        } else unchanged += 1;
+        addLog("导入更新失败", "ORG-STORE-004", "失败原因：组织类型为不可修改列，文件值与系统值不一致", attachment);
+      } else {
+        const exists = organizations.some(item => normalized(item.code) === normalized("ORG-STORE-007"));
+        if (!exists) {
+          const effective = Shared.inputDateTime(), item = {
+            id: Math.max(...organizations.map(row => row.id)) + 1, name: "杭州新湖店", code: "ORG-STORE-007", storeCode: "MG0007", type: "store", parentId: 5,
+            leaderId: "", hrbpId: "", effective, expiry: "", status: "active", storeNature: "direct", storeArea: "165.00", annualRevenue: "980.00",
+            storeGrade: "B1", storeCategory: "community", franchiseTransfer: "", renovationRenewal: "", handoverStatus: "待交房", openDate: "", closeDate: "",
+            province: "浙江省", city: "杭州市", district: "上城区", address: "新湖路88号", lng: "", lat: "", remark: "导入新增示例", employees: 0
+          };
+          organizations.push(item); state.expanded.add(item.parentId);
+          const changes = [fieldChange("组织编码", "", item.code), fieldChange("组织类型", "", typeText(item.type)), fieldChange("上级组织", "", organizations.find(row => row.id === item.parentId)?.name || ""), ...organizationChanges({}, item), fieldChange("组织状态", "", item.status, statusTagText)].filter(Boolean);
+          addLog("导入新增明细", item.name, `${changes.join("；")}；操作来源：导入新增`, attachment); success += 1;
+        } else { failure += 1; addLog("导入新增失败", "ORG-STORE-007", "失败原因：组织编码已存在", attachment); }
+        addLog("导入新增失败", "ORG-STORE-001", "失败原因：组织编码已存在", attachment);
+      }
+      addLog(updating ? "导入更新批次" : "导入新增批次", "组织架构", `批次结果：成功${success}条，失败${failure}条，无变化${unchanged}条；操作来源：Excel导入`, attachment);
+      state.importReady = false; byId("confirmImportButton").disabled = true; byId("confirmImportButton").textContent = "导入完成"; byId("importDialog").querySelector(".dialog-footer [data-close]").textContent = "关闭";
+      byId("importPreview").innerHTML = `<div class="warning-box mt-16">导入完成：成功${success}条，失败${failure}条，无变化${unchanged}条。 <button class="cell-link" type="button" id="downloadImportFailureButton">下载失败明细</button></div>`;
+      Shared.save(); renderAll(); showToast(`组织导入完成：成功${success}条，失败${failure}条，无变化${unchanged}条`);
+    });
+    byId("downloadTemplateButton").addEventListener("click", createImportTemplate);
+    byId("exportForUpdateButton").addEventListener("click", exportOrganizationResult);
+    byId("exportButton").addEventListener("click", exportOrganizationResult);
 
     fillTypeOptions(); fillPeople(); fillAddressOptions(); renderAll();
   </script>

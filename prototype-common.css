@@ -226,6 +226,7 @@ h1 { margin: 0; color: #1f2329; font-size: 20px; line-height: 30px; }
 .import-steps { margin: 0 0 16px; padding-left: 20px; color: var(--text-regular); line-height: 1.9; }
 .upload-box { padding: 18px; border: 1px dashed #b3d8ff; border-radius: var(--radius-md); background: #f8fbff; text-align: center; }
 .upload-actions { margin-top: 12px; display: flex; justify-content: center; gap: 8px; }
+.file-name { margin-top: 8px; color: var(--text-secondary); font-size: 12px; }
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-lighter); }
 .tab { height: 38px; padding: 0 16px; border: 0; border-bottom: 2px solid transparent; color: var(--text-regular); background: transparent; cursor: pointer; }
 .tab.active { color: var(--brand); border-bottom-color: var(--brand); font-weight: 600; }
@@ -255,11 +256,7 @@ dialog.narrow { width: min(520px, calc(100vw - 32px)); }
   .filter-grid { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
   .filter-actions { grid-column: 1 / -1; }
 }
-@media (max-width: 1180px) {
-  .sidebar { width: var(--sidebar-collapsed); }
-  .sidebar .brand { justify-content: center; padding-inline: 8px; }
-  .sidebar .brand-copy, .sidebar .nav-label, .sidebar .nav-arrow, .sidebar .nav-items { display: none; }
-  .sidebar .nav-group-trigger { height: 44px; padding: 0; justify-content: center; }
+@media (max-width: 1279px) {
   .scope-layout { grid-template-columns: 220px minmax(0, 1fr); }
   .user-name { display: none; }
 }

@@ -1,8 +1,8 @@
 (function () {
   "use strict";
 
-  const VERSION = 4;
-  const STORAGE_KEY = "zws-hr-prototype-state-v4";
+  const VERSION = 7;
+  const STORAGE_KEY = "zws-hr-prototype-state-v7";
   const WINDOW_PREFIX = `${STORAGE_KEY}:`;
 
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -24,15 +24,15 @@
       { id: 3, name: "营运一部", code: "ZONE-001", type: "zone", parentId: 2, leaderId: "p02", hrbpId: "p04", effective: "2024-01-01T00:00:00", expiry: "", status: "active", remark: "", employees: 0 },
       { id: 4, name: "上海大区", code: "AREA-001", type: "area", parentId: 3, leaderId: "p03", hrbpId: "p04", effective: "2024-01-01T00:00:00", expiry: "", status: "active", remark: "", employees: 0 },
       { id: 5, name: "上海八区", code: "REG-008", type: "region", parentId: 3, leaderId: "p05", hrbpId: "", effective: "2024-01-01T00:00:00", expiry: "", status: "active", remark: "", employees: 1 },
-      { id: 6, name: "正大广场店", code: "ORG-STORE-001", storeCode: "MG0001", type: "store", parentId: 5, leaderId: "p03", hrbpId: "", effective: "2024-01-01T00:00:00", expiry: "", status: "active", storeNature: "direct", socialSecurity: "local", openDate: "2024-01-12", closeDate: "", province: "上海市", city: "上海市", district: "浦东新区", address: "陆家嘴西路168号", lng: "121.50123", lat: "31.23618", remark: "", employees: 8 },
-      { id: 7, name: "拉斐尔云廊店", code: "ORG-STORE-002", storeCode: "MG0002", type: "store", parentId: 5, leaderId: "p06", hrbpId: "", effective: "2024-03-01T00:00:00", expiry: "", status: "active", storeNature: "hejief", socialSecurity: "remote", openDate: "2024-03-18", closeDate: "", province: "上海市", city: "上海市", district: "浦东新区", address: "云桥路300号", lng: "121.60000", lat: "31.25000", remark: "", employees: 6 },
+      { id: 6, name: "正大广场店", code: "ORG-STORE-001", storeCode: "MG0001", type: "store", parentId: 5, leaderId: "p03", hrbpId: "", effective: "2024-01-01T00:00:00", expiry: "", status: "active", storeNature: "direct", storeArea: "220.50", annualRevenue: "1800.00", storeGrade: "A1", storeCategory: "cityFlagship", franchiseTransfer: "", renovationRenewal: "2025-01-10完成柜台改造", handoverStatus: "已完成", openDate: "2024-01-12", closeDate: "", province: "上海市", city: "上海市", district: "浦东新区", address: "陆家嘴西路168号", lng: "121.50123", lat: "31.23618", remark: "", employees: 8 },
+      { id: 7, name: "拉斐尔云廊店", code: "ORG-STORE-002", storeCode: "MG0002", type: "store", parentId: 5, leaderId: "p06", hrbpId: "", effective: "2024-03-01T00:00:00", expiry: "", status: "active", storeNature: "hejief", storeArea: "150.00", annualRevenue: "900.00", storeGrade: "B1", storeCategory: "community", franchiseTransfer: "2026/7/16起由直营转加盟商合杰", renovationRenewal: "", handoverStatus: "已完成", openDate: "2024-03-18", closeDate: "", province: "上海市", city: "上海市", district: "浦东新区", address: "云桥路300号", lng: "121.60000", lat: "31.25000", remark: "", employees: 6 },
       { id: 8, name: "人力资源中心", code: "FUNC-HR-001", type: "functional", parentId: 1, leaderId: "p04", hrbpId: "p04", effective: "2024-01-01T00:00:00", expiry: "", status: "active", remark: "", employees: 5 },
-      { id: 9, name: "南京新街口店", code: "ORG-STORE-003", storeCode: "MG0003", type: "store", parentId: 5, leaderId: "", hrbpId: "", effective: "2026-10-01T00:00:00", expiry: "", status: "pending", storeNature: "self", socialSecurity: "local", openDate: "2026-10-15", closeDate: "", province: "江苏省", city: "南京市", district: "秦淮区", address: "中山南路1号", lng: "", lat: "", remark: "筹备中", employees: 0 },
+      { id: 9, name: "南京新街口店", code: "ORG-STORE-003", storeCode: "MG0003", type: "store", parentId: 5, leaderId: "", hrbpId: "", effective: "2026-10-01T00:00:00", expiry: "", status: "pending", storeNature: "self", storeArea: "130.00", annualRevenue: "600.00", storeGrade: "B2", storeCategory: "community", franchiseTransfer: "", renovationRenewal: "", handoverStatus: "待交房", openDate: "2026-10-15", closeDate: "", province: "江苏省", city: "南京市", district: "秦淮区", address: "中山南路1号", lng: "", lat: "", remark: "筹备中", employees: 0 },
       { id: 10, name: "九木生活方式有限公司", code: "COMP-002", type: "company", parentId: null, leaderId: "", hrbpId: "", effective: "2024-01-01T00:00:00", expiry: "", status: "active", remark: "多公司示例", employees: 0 },
       { id: 11, name: "上海七区", code: "REG-007", type: "region", parentId: 4, leaderId: "p05", hrbpId: "", effective: "2025-06-01T00:00:00", expiry: "", status: "active", remark: "", employees: 1 },
-      { id: 12, name: "静安大悦城店", code: "ORG-STORE-004", storeCode: "MG0004", type: "store", parentId: 11, leaderId: "p06", hrbpId: "", effective: "2025-07-01T00:00:00", expiry: "", status: "active", storeNature: "direct", socialSecurity: "local", openDate: "2025-07-15", closeDate: "", province: "上海市", city: "上海市", district: "静安区", address: "西藏北路166号", lng: "121.47120", lat: "31.24310", remark: "", employees: 4 },
-      { id: 13, name: "南京德基装修店", code: "ORG-STORE-005", storeCode: "MG0005", type: "store", parentId: 10, leaderId: "", hrbpId: "", effective: "2025-01-01T00:00:00", expiry: "", status: "stopped", storeNature: "direct", socialSecurity: "local", openDate: "2025-01-18", closeDate: "", province: "江苏省", city: "南京市", district: "玄武区", address: "中山路18号", lng: "", lat: "", remark: "装修期间停用，后续重新开业", employees: 0 },
-      { id: 14, name: "历史测试门店", code: "ORG-STORE-006", storeCode: "MG0006", type: "store", parentId: 5, leaderId: "", hrbpId: "", effective: "2024-01-01T00:00:00", expiry: "2025-12-31T23:59:59", status: "expired", storeNature: "self", socialSecurity: "remote", openDate: "2024-01-10", closeDate: "2025-12-31", province: "上海市", city: "上海市", district: "徐汇区", address: "历史地址", lng: "", lat: "", remark: "历史数据示例", employees: 0 }
+      { id: 12, name: "静安大悦城店", code: "ORG-STORE-004", storeCode: "MG0004", type: "store", parentId: 11, leaderId: "p06", hrbpId: "", effective: "2025-07-01T00:00:00", expiry: "", status: "active", storeNature: "direct", storeArea: "180.00", annualRevenue: "1200.00", storeGrade: "A2", storeCategory: "areaFlagship", franchiseTransfer: "", renovationRenewal: "", handoverStatus: "已完成", openDate: "2025-07-15", closeDate: "", province: "上海市", city: "上海市", district: "静安区", address: "西藏北路166号", lng: "121.47120", lat: "31.24310", remark: "", employees: 4 },
+      { id: 13, name: "南京德基装修店", code: "ORG-STORE-005", storeCode: "MG0005", type: "store", parentId: 10, leaderId: "", hrbpId: "", effective: "2025-01-01T00:00:00", expiry: "", status: "stopped", storeNature: "direct", storeArea: "200.00", annualRevenue: "1000.00", storeGrade: "B1", storeCategory: "areaFlagship", franchiseTransfer: "", renovationRenewal: "2026-08-01至2026-09-30装修升级", handoverStatus: "已完成", openDate: "2025-01-18", closeDate: "", province: "江苏省", city: "南京市", district: "玄武区", address: "中山路18号", lng: "", lat: "", remark: "装修期间停用，后续重新开业", employees: 0 },
+      { id: 14, name: "历史测试门店", code: "ORG-STORE-006", storeCode: "MG0006", type: "store", parentId: 5, leaderId: "", hrbpId: "", effective: "2024-01-01T00:00:00", expiry: "2025-12-31T23:59:59", status: "expired", storeNature: "self", storeArea: "128.50", annualRevenue: "650.00", storeGrade: "B2", storeCategory: "community", franchiseTransfer: "原历史说明", renovationRenewal: "2025-12-31闭店前完成续约评估", handoverStatus: "已完成", openDate: "2024-01-10", closeDate: "2025-12-31", province: "上海市", city: "上海市", district: "徐汇区", address: "历史地址", lng: "", lat: "", remark: "历史数据示例", employees: 0 }
     ];
   }
 
@@ -88,8 +88,9 @@
         { id: "S20260810", time: "2026-08-10 16:20:00", type: "手工快照", note: "上海区域调整前", creator: "张明", attachment: { name: "上海区域调整说明.txt", type: "text/plain", content: "上海区域组织调整前手工快照附件。" }, data: clone(snapshotBeforeMove) }
       ],
       organizationLogs: [
+        { time: "2026-09-03 09:20:00", operator: "张明", action: "编辑组织", target: "拉斐尔云廊店", note: "门店面积（㎡）：148.00 → 150.00；门店年营业额预估（万元）：850.00 → 900.00；门店等级：B2 → B1；门店类别：未填写 → 社区标准店；加盟商转出情况：未填写 → 2026/7/16起由直营转加盟商合杰；开店协同交房表状态：未填写 → 已完成" },
         { time: "2026-09-01 14:30:00", operator: "张明", action: "调整组织层级", target: "上海八区", note: "上级组织：上海大区 → 营运一部；调整原因：区域调整", attachment: { name: "组织调整说明.txt", type: "text/plain", content: "上海八区组织层级调整说明及相关业务确认记录。" } },
-        { time: "2026-09-02 11:35:00", operator: "张明", action: "编辑组织", target: "正大广场店", note: "详细地址：陆家嘴西路168号 → 陆家嘴西路168号B1层；经度：121.50000 → 121.50123；纬度：31.23500 → 31.23618" },
+        { time: "2026-09-02 11:35:00", operator: "张明", action: "编辑组织", target: "正大广场店", note: "门店具体地址：陆家嘴西路168号 → 陆家嘴西路168号B1层；经度：121.50000 → 121.50123；纬度：31.23500 → 31.23618" },
         { time: "2026-08-31 23:59:59", operator: "系统", action: "生成快照", target: "全部组织", note: "月末自动快照" }
       ],
       positionLogs: [
@@ -97,13 +98,17 @@
         { time: "2026-09-02 14:12:00", operator: "张明", action: "编辑岗位", target: "店长", note: "适用职等：8、9 → 9、10" }
       ],
       headcountLogs: [
-        { time: "2026-09-01 00:00:00", operator: "系统", action: "临时编制到期", code: "HC00000006", note: "计划数量：1 → 0；占用状态：部分占用 → 超编待处理" },
+        { time: "2026-09-02 14:30:00", operator: "系统", action: "岗位占用数量联动", code: "HC00000004", note: "实际数量：1.5 → 1；占用状态：超编待处理 → 满编；变更来源：岗位“兼职”编制占用数量调整" },
+        { time: "2026-09-02 14:30:00", operator: "系统", action: "岗位占用数量联动", code: "HC00000006", note: "实际数量：1 → 0.5；变更来源：岗位“兼职”编制占用数量调整" },
+        { time: "2026-09-02 14:30:00", operator: "系统", action: "岗位占用数量联动", code: "HC00000009", note: "计划数量：1 → 0.5；变更来源：岗位“兼职”编制占用数量调整" },
+        { time: "2026-09-01 00:00:00", operator: "系统", action: "临时编制到期", code: "HC00000006", note: "计划数量：1 → 0；占用状态：满编 → 超编待处理" },
         { time: "2026-08-20 14:35:00", operator: "张明", action: "编辑编制", code: "HC00000005", note: "结束时间：2026-10-31 23:59:59 → 2026-12-31 23:59:59；备注：国庆临时编制 → 国庆至年末临时编制" }
       ],
       headcountRecordLogs: {
-        1: [{ time: "2026-08-12 10:30:00", operator: "系统", title: "人员占用", note: "关联人员：未填写 → 王芳（JM0231）；实际数量：0 → 1；占用状态：空编 → 满编" }, { time: "2026-07-01 09:00:00", operator: "张明", title: "新增编制", note: "系统生成HC00000001" }],
-        4: [{ time: "2026-09-01 11:15:00", operator: "系统", title: "人员占用", note: "关联人员：未填写 → 周晓（JM0521）；实际数量：0.5 → 1；占用状态：部分占用 → 满编" }, { time: "2026-08-18 13:20:00", operator: "系统", title: "人员占用", note: "关联人员：未填写 → 赵敏（JM0412）；实际数量：0 → 0.5；占用状态：空编 → 部分占用" }],
-        6: [{ time: "2026-09-01 00:00:00", operator: "系统", title: "临时编制到期", note: "计划数量：1 → 0；占用状态：部分占用 → 超编待处理" }]
+        1: [{ time: "2026-08-12 10:30:00", operator: "系统", title: "人员占用", note: "关联人员：未填写 → 王芳（JM0231）；实际数量：0 → 1；占用状态：空编 → 满编" }, { time: "2026-07-01 09:00:00", operator: "张明", title: "新增编制", note: "编制编码：未填写 → HC00000001" }],
+        4: [{ time: "2026-09-02 14:30:00", operator: "系统", title: "岗位占用数量联动", note: "实际数量：1.5 → 1；占用状态：超编待处理 → 满编；变更来源：岗位“兼职”编制占用数量调整" }, { time: "2026-09-01 11:15:00", operator: "系统", title: "人员占用", note: "关联人员：未填写 → 周晓（JM0521）；实际数量：1 → 1.5；占用状态：满编 → 超编待处理" }, { time: "2026-08-18 13:20:00", operator: "系统", title: "人员占用", note: "关联人员：未填写 → 赵敏（JM0412）；实际数量：0 → 1；占用状态：空编 → 满编" }],
+        6: [{ time: "2026-09-02 14:30:00", operator: "系统", title: "岗位占用数量联动", note: "实际数量：1 → 0.5；变更来源：岗位“兼职”编制占用数量调整" }, { time: "2026-09-01 00:00:00", operator: "系统", title: "临时编制到期", note: "计划数量：1 → 0；占用状态：满编 → 超编待处理" }],
+        9: [{ time: "2026-09-02 14:30:00", operator: "系统", title: "岗位占用数量联动", note: "计划数量：1 → 0.5；变更来源：岗位“兼职”编制占用数量调整" }]
       },
       standardHours: [
         { id: 1, month: "2026-12", hours: 176, updatedAt: "2026-09-02 15:20:00", operator: "张明" },
@@ -115,7 +120,7 @@
         { id: 7, month: "2025-12", hours: 176, updatedAt: "2025-11-18 10:00:00", operator: "陈丽" }
       ],
       standardHoursLogs: [
-        { time: "2026-09-02 15:20:00", operator: "张明", month: "2026-12", action: "新增", note: "标准工时：176小时" },
+        { time: "2026-09-02 15:20:00", operator: "张明", month: "2026-12", action: "新增", note: "标准工时：未填写 → 176小时" },
         { time: "2026-08-20 10:30:00", operator: "周萌", month: "2026-09", action: "编辑", note: "标准工时：175.5小时 → 176小时" }
       ]
     };
@@ -164,7 +169,7 @@
     return "over";
   }
   function lifecycleText(status) { return { pending: "待生效", active: "生效中", expired: "已失效", stopped: "已停用" }[status] || status; }
-  function occupancyText(status) { return { empty: "空编", partial: "部分占用", full: "满编", over: "超编待处理", none: "—" }[status] || status; }
+  function occupancyText(status) { return status ? ({ empty: "空编", partial: "部分占用", full: "满编", over: "超编待处理", none: "—" }[status] || status) : "未填写"; }
   function emptyText(value) { return value === "" || value == null ? "未填写" : String(value); }
   function change(label, before, after, formatter = emptyText) {
     return String(before ?? "") === String(after ?? "") ? "" : `${label}：${formatter(before)} → ${formatter(after)}`;
@@ -177,7 +182,7 @@
   }
   function planFollowsPosition(item, now = new Date()) {
     if (item.status === "expired") return false;
-    if (item.type === "temporary" && item.end && new Date(item.end) <= now) return false;
+    if (item.type === "temporary" && item.end && new Date(item.end) <= now && Number(item.plan) === 0) return false;
     return true;
   }
 
@@ -187,7 +192,7 @@
     let changed = false;
 
     data.organizations.forEach(item => {
-      if (item.status === "stopped") return;
+      if (["stopped", "expired"].includes(item.status)) return;
       const before = item.status;
       const after = item.effective && new Date(item.effective) > now ? "pending" : item.expiry && new Date(item.expiry) <= now ? "expired" : "active";
       if (before === after) return;

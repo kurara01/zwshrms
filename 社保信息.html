@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>社保信息｜杂物社人事系统</title>
+  <link rel="stylesheet" href="./prototype-common.css" />
+  <style>
+    .social-filter-grid { grid-template-columns: repeat(4, minmax(130px, 1fr)); }
+    .social-filter-grid .location-filter { grid-column: span 2; }
+    .social-table { min-width: 1900px; }
+    .social-table .store-col { width: 150px; }
+    .social-table .org-code-col { width: 145px; }
+    .social-table .store-code-col { width: 110px; }
+    .social-table .status-col { width: 90px; }
+    .social-table .scope-col { width: 120px; }
+    .social-table .type-col { width: 105px; }
+    .social-table .location-col { width: 210px; }
+    .social-table .time-col { width: 175px; }
+    .social-table .money-col { width: 125px; }
+    .social-table .combined-col { width: 155px; }
+    .social-table .action-col { width: 72px; }
+    .social-table th:first-child, .social-table td:first-child { position: sticky; left: 0; z-index: 2; }
+    .social-table th:first-child { background: #fafafa; }
+    .social-table td:first-child { background: #fff; }
+    .social-table tbody tr:hover td:first-child { background: var(--fill); }
+    .form-section-title { grid-column: 1 / -1; margin: 2px 0 -2px; padding-bottom: 8px; border-bottom: 1px solid var(--border-lighter); font-size: 14px; }
+    .unit-input { position: relative; }
+    .unit-input .input { padding-right: 42px; }
+    .unit-suffix { position: absolute; right: 10px; top: 50%; color: var(--text-secondary); font-size: 12px; transform: translateY(-50%); pointer-events: none; }
+    .file-name { margin-top: 8px; color: var(--text-secondary); font-size: 12px; }
+    @media (max-width: 1380px) { .social-filter-grid { grid-template-columns: repeat(2, minmax(160px, 1fr)); } .social-filter-grid .location-filter { grid-column: 1 / -1; } }
+    @media (max-width: 900px) { .form-section-title { grid-column: auto; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">跳到主内容</a>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="主导航">
+      <div class="brand"><div class="brand-mark" aria-hidden="true">九</div><div class="brand-copy"><div class="brand-name">杂物社 · 人事系统</div></div></div>
+      <nav class="nav-scroll">
+        <section class="nav-group"><button class="nav-group-trigger" type="button" aria-expanded="true"><span class="nav-arrow" aria-hidden="true">▶</span><span class="nav-label">组织人事</span></button><div class="nav-items"><a class="nav-item" href="./组织基础信息表.html">组织架构</a><a class="nav-item" href="./岗位管理.html">岗位管理</a><a class="nav-item" href="./编制管理.html">编制管理</a><a class="nav-item active" href="./社保信息.html" aria-current="page">社保信息</a></div></section>
+        <section class="nav-group"><button class="nav-group-trigger" type="button" aria-expanded="true"><span class="nav-arrow" aria-hidden="true">▶</span><span class="nav-label">考勤管理</span></button><div class="nav-items"><a class="nav-item" href="./标准工时维护.html">标准工时维护</a></div></section>
+      </nav>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar"><div class="topbar-left"><button class="icon-button" id="sidebarToggle" type="button" aria-label="展开或收起侧边栏">☰</button><nav class="breadcrumbs" aria-label="面包屑"><span>首页</span><span class="separator">/</span><span>组织人事</span><span class="separator">/</span><span class="current">社保信息</span></nav></div><div class="topbar-right"><button class="user-chip" type="button"><span class="avatar" aria-hidden="true">张</span><span class="user-name">张明</span></button></div></header>
+
+      <main class="page-scroll" id="mainContent" tabindex="-1">
+        <header class="page-heading"><div><div class="page-title-row"><h1>社保信息</h1></div><p class="page-description">按门店维护社保缴纳地、基数、比例、费用与成本</p></div><div class="page-actions"><button class="button" id="logsButton" type="button">操作日志</button></div></header>
+
+        <div class="scope-layout">
+          <aside class="tree-card card" aria-label="组织范围"><header class="card-header"><span>组织范围</span><div><button class="cell-link" id="expandButton" type="button">全部展开</button>&nbsp;&nbsp;<button class="cell-link" id="collapseButton" type="button">收起</button></div></header><div class="tree-search"><label class="sr-only" for="treeSearch">搜索组织</label><input class="input" id="treeSearch" type="search" placeholder="搜索名称或编码" /></div><div class="tree-root" id="treeRoot" role="tree"></div></aside>
+
+          <section class="content-stack" aria-label="社保信息列表">
+            <form class="filter-card card" id="filterForm"><div class="filter-grid social-filter-grid">
+              <div class="field"><label for="filterStoreName">门店名称</label><input class="input" id="filterStoreName" type="search" placeholder="请输入门店名称" /></div>
+              <div class="field"><label for="filterOrgCode">组织编码</label><input class="input mono" id="filterOrgCode" type="search" placeholder="请输入组织编码" /></div>
+              <div class="field"><label for="filterStoreCode">门店编码</label><input class="input mono" id="filterStoreCode" type="search" placeholder="请输入门店编码" /></div>
+              <div class="field"><label for="filterStatus">门店状态</label><select class="select" id="filterStatus"><option value="">全部状态</option><option value="pending">待生效</option><option value="active">生效中</option><option value="expired">已失效</option><option value="stopped">已停用</option></select></div>
+              <div class="field"><label for="filterSocialType">社保类型</label><select class="select" id="filterSocialType"><option value="">全部类型</option><option value="local">本地社保</option><option value="remote">异地社保</option></select></div>
+              <div class="field location-filter"><span class="field-label">社保实际缴纳地</span><div class="field-inline"><select class="select" id="filterProvince" aria-label="社保缴纳省"><option value="">全部省份</option></select><select class="select" id="filterCity" aria-label="社保缴纳市"><option value="">全部城市</option></select><select class="select" id="filterDistrict" aria-label="社保缴纳区县"><option value="">全部区县</option></select></div></div>
+              <div class="filter-actions"><button class="button primary" type="submit">查询</button><button class="button" type="reset">重置</button></div>
+            </div></form>
+
+            <section class="table-card card">
+              <header class="table-toolbar"><div class="toolbar-actions"><button class="button" id="importButton" type="button">导入更新</button><button class="button" id="exportButton" type="button">导出当前结果</button></div><div class="toolbar-summary"><span class="scope-chip" id="selectedScope">全部组织</span><span>共 <strong id="totalCount">0</strong> 家门店</span></div></header>
+              <div class="table-scroll"><table class="data-table social-table"><caption class="sr-only">门店社保信息列表</caption><thead><tr><th class="store-col">门店名称</th><th class="org-code-col">组织编码</th><th class="store-code-col">门店编码</th><th class="status-col">门店状态</th><th class="scope-col">所属大区</th><th class="scope-col">所属小区</th><th class="type-col">社保类型</th><th class="location-col">社保实际缴纳地</th><th class="time-col">生效时间</th><th class="money-col">单位总费用（元）</th><th class="money-col">个人总费用（元）</th><th class="combined-col">社保公积金总费用（元）</th><th class="money-col">成本（元）</th><th class="action-col">操作</th></tr></thead><tbody id="tableBody"></tbody></table></div>
+              <footer class="pagination"><span id="paginationInfo"></span><div><button class="page-button active" type="button" aria-current="page">1</button></div></footer>
+            </section>
+          </section>
+        </div>
+      </main>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="editDialog" class="wide" aria-labelledby="editTitle"><form class="dialog-shell" id="socialForm" novalidate><header class="dialog-header"><h2 id="editTitle">编辑社保信息</h2><button class="icon-button" type="button" data-close="editDialog" aria-label="关闭社保信息编辑">✕</button></header><div class="dialog-body"><div class="form-errors" id="formErrors" hidden></div><div class="form-grid">
+    <h3 class="form-section-title">门店信息</h3>
+    <div class="field"><label for="editStoreName">门店名称</label><input class="input" id="editStoreName" disabled /></div>
+    <div class="field"><label for="editStatus">门店状态</label><input class="input" id="editStatus" disabled /></div>
+    <div class="field"><label for="editOrgCode">组织编码</label><input class="input mono" id="editOrgCode" disabled /></div>
+    <div class="field"><label for="editStoreCode">门店编码</label><input class="input mono" id="editStoreCode" disabled /></div>
+    <div class="field"><label for="editArea">所属大区</label><input class="input" id="editArea" disabled /></div>
+    <div class="field"><label for="editRegion">所属小区</label><input class="input" id="editRegion" disabled /></div>
+
+    <h3 class="form-section-title">社保缴纳信息</h3>
+    <div class="field"><label class="required" for="socialType">社保类型</label><select class="select" id="socialType"><option value="">请选择</option><option value="local">本地社保</option><option value="remote">异地社保</option></select></div>
+    <div class="field"><label class="required" for="effectiveTime">生效时间</label><input class="input" id="effectiveTime" type="datetime-local" step="1" /></div>
+    <div class="field"><label for="socialProvince">社保缴纳省</label><select class="select" id="socialProvince"><option value="">请选择省份</option></select></div>
+    <div class="field"><label for="socialCity">社保缴纳市</label><select class="select" id="socialCity"><option value="">请选择城市</option></select></div>
+    <div class="field"><label for="socialDistrict">社保缴纳区县</label><select class="select" id="socialDistrict"><option value="">请选择区县</option></select></div>
+
+    <h3 class="form-section-title">基数与比例</h3>
+    <div class="field"><label for="socialBase">社保基数（最低）</label><div class="unit-input"><input class="input" id="socialBase" type="number" min="0" step="0.01" inputmode="decimal" /><span class="unit-suffix">元</span></div></div>
+    <div class="field"><label for="housingBase">公积金基数（最低）</label><div class="unit-input"><input class="input" id="housingBase" type="number" min="0" step="0.01" inputmode="decimal" /><span class="unit-suffix">元</span></div></div>
+    <div class="field"><label for="housingRate">公积金缴费比例</label><div class="unit-input"><input class="input" id="housingRate" type="number" min="0" max="100" step="0.01" inputmode="decimal" /><span class="unit-suffix">%</span></div></div>
+
+    <h3 class="form-section-title">单位费用</h3>
+    <div class="field"><label for="unitSocial">单位社保费用</label><div class="unit-input"><input class="input" id="unitSocial" type="number" min="0" step="0.01" inputmode="decimal" /><span class="unit-suffix">元</span></div></div>
+    <div class="field"><label for="unitHousing">单位公积金</label><div class="unit-input"><input class="input" id="unitHousing" type="number" min="0" step="0.01" inputmode="decimal" /><span class="unit-suffix">元</span></div></div>
+    <div class="field"><label for="unitDisability">单位残保金</label><div class="unit-input"><input class="input" id="unitDisability" type="number" min="0" step="0.01" inputmode="decimal" /><span class="unit-suffix">元</span></div></div>
+    <div class="field"><label for="unitTotal">单位总费用</label><div class="unit-input"><input class="input" id="unitTotal" type="number" min="0" step="0.01" inputmode="decimal" /><span class="unit-suffix">元</span></div></div>
+
+    <h3 class="form-section-title">个人费用与成本</h3>
+    <div class="field"><label for="personalSocial">个人社保费用</label><div class="unit-input"><input class="input" id="personalSocial" type="number" min="0" step="0.01" inputmode="decimal" /><span class="unit-suffix">元</span></div></div>
+    <div class="field"><label for="personalHousing">个人公积金费用</label><div class="unit-input"><input class="input" id="personalHousing" type="number" min="0" step="0.01" inputmode="decimal" /><span class="unit-suffix">元</span></div></div>
+    <div class="field"><label for="personalTotal">个人总费用</label><div class="unit-input"><input class="input" id="personalTotal" type="number" min="0" step="0.01" inputmode="decimal" /><span class="unit-suffix">元</span></div></div>
+    <div class="field"><label for="combinedTotal">社保公积金总费用</label><div class="unit-input"><input class="input" id="combinedTotal" type="number" min="0" step="0.01" inputmode="decimal" /><span class="unit-suffix">元</span></div></div>
+    <div class="field"><label for="cost">成本</label><div class="unit-input"><input class="input" id="cost" type="number" min="0" step="0.01" inputmode="decimal" /><span class="unit-suffix">元</span></div></div>
+    <div class="field full"><label for="socialRemark">社保备注</label><textarea class="textarea" id="socialRemark" maxlength="500"></textarea></div>
+  </div></div><footer class="dialog-footer"><button class="button" type="button" data-close="editDialog">取消</button><button class="button primary" type="submit">保存</button></footer></form></dialog>
+
+  <dialog id="importDialog" class="wide" aria-labelledby="importTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="importTitle">导入更新社保信息</h2><button class="icon-button" type="button" data-close="importDialog" aria-label="关闭导入更新">✕</button></header><div class="dialog-body"><div class="impact-box">请先导出当前结果，在导出文件中修改社保字段后重新导入。</div><ol class="import-steps mt-14"><li>组织编码是唯一匹配键，只允许匹配已有门店。</li><li>门店和组织列不可修改；选填社保字段留空会清空原值。</li><li>社保类型和生效时间必填，其他正确数据可在部分行失败时继续更新。</li></ol><div class="upload-box"><p>选择从本页导出并修改后的文件</p><input class="input" id="importFile" type="file" accept=".xls,.xlsx" /><div class="file-name" id="importFileName">尚未选择文件</div><div class="upload-actions"><button class="button" id="exportForUpdateButton" type="button">导出当前结果</button><button class="button" id="loadExampleButton" type="button">加载示例文件</button></div></div><div id="importPreview"></div></div><footer class="dialog-footer"><button class="button" type="button" data-close="importDialog">取消</button><button class="button primary" id="confirmImportButton" type="button" disabled>确认导入</button></footer></div></dialog>
+
+  <dialog id="logsDialog" class="wide" aria-labelledby="logsTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="logsTitle">社保信息操作日志</h2><button class="icon-button" type="button" data-close="logsDialog" aria-label="关闭操作日志">✕</button></header><div class="dialog-body"><table class="log-list"><thead><tr><th>时间</th><th>操作人</th><th>操作</th><th>来源</th><th>门店</th><th>变更说明</th><th>附件</th></tr></thead><tbody id="logsBody"></tbody></table></div><footer class="dialog-footer"><button class="button" type="button" data-close="logsDialog">关闭</button></footer></div></dialog>
+  <dialog id="fileDialog" class="wide" aria-labelledby="fileDialogTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="fileDialogTitle">查看导入文件</h2><button class="icon-button" type="button" data-close="fileDialog" aria-label="关闭文件查看">✕</button></header><div class="dialog-body" id="fileDialogBody"></div><footer class="dialog-footer"><a class="button" id="fileDownload" href="#" download>下载文件</a><button class="button primary" type="button" data-close="fileDialog">关闭</button></footer></div></dialog>
+
+  <script src="./prototype-common.js"></script>
+  <script src="./prototype-data.js"></script>
+  <script>
+    "use strict";
+    const { byId, escapeHTML, showToast, openDialog, closeDialog, downloadBlob, downloadUpdateWorkbook } = window.PrototypeUI;
+    const Shared = window.PrototypeData;
+    Shared.recalculateLifecycle();
+    const organizations = Shared.data.organizations;
+    const locationData = {
+      "上海市": { "上海市": ["浦东新区", "静安区", "徐汇区", "黄浦区"] },
+      "江苏省": { "南京市": ["玄武区", "秦淮区", "建邺区"], "苏州市": ["姑苏区", "常熟市", "昆山市"] },
+      "浙江省": { "杭州市": ["上城区", "西湖区", "余杭区"], "金华市": ["婺城区", "义乌市"] }
+    };
+    const socialTypeLogText = value => value ? ({ local: "本地社保", remote: "异地社保" }[value] || value) : "未填写";
+    const timeLogText = value => value ? value.replace("T", " ") : "未填写";
+    const socialFields = [
+      ["socialType", "社保类型", socialTypeLogText], ["effectiveTime", "生效时间", timeLogText],
+      ["province", "社保缴纳省"], ["city", "社保缴纳市"], ["district", "社保缴纳区县"],
+      ["socialBase", "社保基数（最低）"], ["housingBase", "公积金基数（最低）"], ["housingRate", "公积金缴费比例"],
+      ["unitSocial", "单位社保费用"], ["unitHousing", "单位公积金"], ["unitDisability", "单位残保金"], ["unitTotal", "单位总费用"],
+      ["personalSocial", "个人社保费用"], ["personalHousing", "个人公积金费用"], ["personalTotal", "个人总费用"],
+      ["combinedTotal", "社保公积金总费用"], ["cost", "成本"], ["remark", "社保备注"]
+    ];
+    const amountFields = ["socialBase", "housingBase", "unitSocial", "unitHousing", "unitDisability", "unitTotal", "personalSocial", "personalHousing", "personalTotal", "combinedTotal", "cost"];
+    const emptyRecord = storeId => ({ storeId, socialType: "", effectiveTime: "", province: "", city: "", district: "", socialBase: "", housingBase: "", housingRate: "", unitSocial: "", unitHousing: "", unitDisability: "", unitTotal: "", personalSocial: "", personalHousing: "", personalTotal: "", combinedTotal: "", cost: "", remark: "" });
+
+    Shared.data.socialSecurityRecords ||= [
+      { ...emptyRecord(6), socialType: "local", effectiveTime: "2026-07-01T00:00:00", province: "上海市", city: "上海市", district: "浦东新区", socialBase: "7384.00", housingBase: "2690.00", housingRate: "7.00", unitSocial: "2229.97", unitHousing: "188.30", unitDisability: "110.76", unitTotal: "2529.03", personalSocial: "788.08", personalHousing: "188.30", personalTotal: "976.38", combinedTotal: "3505.41", cost: "3505.41", remark: "上海本地最低基数" },
+      { ...emptyRecord(7), socialType: "remote", effectiveTime: "2026-07-01T00:00:00", province: "江苏省", city: "苏州市", district: "常熟市", socialBase: "4879.00", housingBase: "2490.00", housingRate: "5.00", unitSocial: "1468.50", unitHousing: "124.50", unitDisability: "73.19", unitTotal: "1666.19", personalSocial: "520.00", personalHousing: "124.50", personalTotal: "644.50", combinedTotal: "2310.69", cost: "2400.00", remark: "" },
+      { ...emptyRecord(12), socialType: "local", effectiveTime: "2026-01-01T00:00:00", province: "上海市", city: "上海市", district: "静安区", socialBase: "7384.00", housingBase: "2690.00", housingRate: "7.00", unitTotal: "2529.03", personalTotal: "976.38", combinedTotal: "3505.41", cost: "3505.41" },
+      { ...emptyRecord(13), socialType: "local", effectiveTime: "2025-01-01T00:00:00", province: "江苏省", city: "南京市", district: "玄武区", socialBase: "4879.00", housingBase: "2490.00", housingRate: "5.00", unitTotal: "1688.20", personalTotal: "652.40", combinedTotal: "2340.60", cost: "2340.60", remark: "装修期间保留档案" },
+      { ...emptyRecord(14), socialType: "remote", effectiveTime: "2025-01-01T00:00:00", province: "浙江省", city: "杭州市", district: "上城区", socialBase: "4812.00", housingBase: "2490.00", housingRate: "5.00", unitTotal: "1620.00", personalTotal: "630.00", combinedTotal: "2250.00", cost: "2250.00", remark: "历史门店数据" }
+    ];
+    organizations.filter(item => item.type === "store").forEach(store => { if (!Shared.data.socialSecurityRecords.some(record => record.storeId === store.id)) Shared.data.socialSecurityRecords.push(emptyRecord(store.id)); });
+    Shared.data.socialSecurityLogs ||= [
+      { time: "2026-09-02 16:40:00", operator: "张明", action: "编辑社保信息", source: "页面编辑", store: "正大广场店（ORG-STORE-001）", note: "社保基数（最低）：7000.00 → 7384.00；单位社保费用：2115.20 → 2229.97", attachment: null },
+      { time: "2026-08-15 10:20:00", operator: "周萌", action: "导入更新明细", source: "导入更新", store: "拉斐尔云廊店（ORG-STORE-002）", note: "社保实际缴纳地：江苏省/苏州市 → 江苏省/苏州市/常熟市；成本：2350.00 → 2400.00", attachment: { name: "社保信息-20260815.xls", type: "text/plain", content: "历史示例导入文件" } }
+    ];
+    Shared.save();
+
+    const records = Shared.data.socialSecurityRecords;
+    const logs = Shared.data.socialSecurityLogs;
+    const state = { selectedOrgId: null, editingStoreId: null, expanded: new Set([1, 2, 3, 4, 5, 10, 11]), importReady: false, importFileName: "", importAttachment: null, importGeneration: 0, filters: { storeName: "", orgCode: "", storeCode: "", status: "", socialType: "", province: "", city: "", district: "" } };
+
+    function org(id) { return organizations.find(item => item.id === Number(id)); }
+    function recordFor(storeId) { return records.find(item => item.storeId === Number(storeId)); }
+    function displayOrgName(item) { return item?.name || ""; }
+    function statusText(status) { return Shared.lifecycleText(status); }
+    function statusTag(status) { const css = { pending: "warning", active: "success", expired: "info", stopped: "info" }[status] || "info"; return `<span class="tag ${css}">${escapeHTML(statusText(status))}</span>`; }
+    function socialTypeText(value) { return { local: "本地社保", remote: "异地社保" }[value] || "—"; }
+    function ancestor(item, type) { let current = item; while (current) { if (current.type === type) return current; current = org(current.parentId); } return null; }
+    function organizationPath(item) { const parts = []; let current = item; while (current) { parts.unshift(displayOrgName(current)); current = org(current.parentId); } return parts.join(" / "); }
+    function descendantIds(id) { const result = new Set([Number(id)]), queue = [Number(id)]; while (queue.length) { const parentId = queue.shift(); organizations.filter(item => item.parentId === parentId).forEach(child => { if (!result.has(child.id)) { result.add(child.id); queue.push(child.id); } }); } return result; }
+    function locationText(record) { return [record.province, record.city, record.district].filter(Boolean).join(" / ") || "—"; }
+    function moneyText(value) { return value === "" || value == null ? "—" : Number(value).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function logValue(value) { return value === "" || value == null ? "未填写" : String(value); }
+    function fieldChange(label, before, after, formatter = logValue) { return String(before ?? "") === String(after ?? "") ? "" : `${label}：${formatter(before)} → ${formatter(after)}`; }
+
+    function fillCascade(prefix, province = "", city = "", district = "") {
+      const provinceSelect = byId(`${prefix}Province`), citySelect = byId(`${prefix}City`), districtSelect = byId(`${prefix}District`);
+      const allLabel = prefix === "filter";
+      provinceSelect.innerHTML = `<option value="">${allLabel ? "全部省份" : "请选择省份"}</option>${Object.keys(locationData).map(value => `<option value="${value}">${value}</option>`).join("")}`;
+      provinceSelect.value = locationData[province] ? province : "";
+      const cities = Object.keys(locationData[provinceSelect.value] || {});
+      citySelect.innerHTML = `<option value="">${allLabel ? "全部城市" : "请选择城市"}</option>${cities.map(value => `<option value="${value}">${value}</option>`).join("")}`;
+      citySelect.value = cities.includes(city) ? city : "";
+      const districts = locationData[provinceSelect.value]?.[citySelect.value] || [];
+      districtSelect.innerHTML = `<option value="">${allLabel ? "全部区县" : "请选择区县"}</option>${districts.map(value => `<option value="${value}">${value}</option>`).join("")}`;
+      districtSelect.value = districts.includes(district) ? district : "";
+    }
+
+    function renderTree() {
+      const active = organizations.filter(item => item.status === "active");
+      const activeIds = new Set(active.map(item => item.id));
+      const keyword = byId("treeSearch").value.trim().toLowerCase();
+      let visibleIds = new Set(activeIds);
+      if (keyword) {
+        visibleIds = new Set();
+        active.filter(item => `${item.name} ${item.code} ${item.storeCode || ""}`.toLowerCase().includes(keyword)).forEach(item => { let current = item; while (current && activeIds.has(current.id)) { visibleIds.add(current.id); current = org(current.parentId); } });
+      }
+      const childrenOf = parentId => active.filter(item => item.parentId === parentId && visibleIds.has(item.id));
+      const renderNodes = (items, depth = 0) => items.map(item => { const children = childrenOf(item.id), expanded = state.expanded.has(item.id) || Boolean(keyword); return `<div class="tree-row" style="--depth:${depth}" role="treeitem" aria-expanded="${children.length ? expanded : false}"><button class="tree-toggle ${children.length ? "" : "placeholder"}" type="button" data-tree-toggle="${item.id}" aria-label="${expanded ? "收起" : "展开"}${escapeHTML(item.name)}">▶</button><button class="tree-label ${state.selectedOrgId === item.id ? "active" : ""}" type="button" data-tree-select="${item.id}" title="${escapeHTML(organizationPath(item))}"><span class="tree-name">${escapeHTML(displayOrgName(item))}</span></button></div>${children.length && expanded ? renderNodes(children, depth + 1) : ""}`; }).join("");
+      const roots = active.filter(item => (!item.parentId || !activeIds.has(item.parentId)) && visibleIds.has(item.id));
+      byId("treeRoot").innerHTML = `<div class="tree-row" style="--depth:0"><button class="tree-toggle placeholder" type="button">▶</button><button class="tree-label ${state.selectedOrgId == null ? "active" : ""}" type="button" data-tree-select=""><span class="tree-name">全部组织</span></button></div>${renderNodes(roots)}`;
+    }
+
+    function rows() {
+      const scope = state.selectedOrgId == null ? null : descendantIds(state.selectedOrgId);
+      return organizations.filter(store => store.type === "store" && (!scope || scope.has(store.id))).map(store => ({ store, record: recordFor(store.id), area: ancestor(store, "area"), region: ancestor(store, "region") })).filter(({ store, record }) => {
+        const f = state.filters;
+        return (!f.storeName || store.name.toLowerCase().includes(f.storeName.toLowerCase())) && (!f.orgCode || store.code.toLowerCase().includes(f.orgCode.toLowerCase())) && (!f.storeCode || (store.storeCode || "").toLowerCase().includes(f.storeCode.toLowerCase())) && (!f.status || store.status === f.status) && (!f.socialType || record.socialType === f.socialType) && (!f.province || record.province === f.province) && (!f.city || record.city === f.city) && (!f.district || record.district === f.district);
+      }).sort((a, b) => a.store.code.localeCompare(b.store.code));
+    }
+
+    function renderTable() {
+      const result = rows();
+      byId("selectedScope").textContent = state.selectedOrgId == null ? "全部组织" : displayOrgName(org(state.selectedOrgId));
+      byId("totalCount").textContent = result.length;
+      byId("paginationInfo").textContent = result.length ? `显示1–${result.length}条，共${result.length}条` : "共0条";
+      document.querySelector(".pagination .page-button").hidden = !result.length;
+      byId("tableBody").innerHTML = result.length ? result.map(({ store, record, area, region }) => `<tr><td title="${escapeHTML(store.name)}">${escapeHTML(store.name)}</td><td class="mono">${escapeHTML(store.code)}</td><td class="mono">${escapeHTML(store.storeCode || "—")}</td><td>${statusTag(store.status)}</td><td>${escapeHTML(area?.name || "—")}</td><td>${escapeHTML(region?.name || "—")}</td><td>${escapeHTML(socialTypeText(record.socialType))}</td><td title="${escapeHTML(locationText(record))}">${escapeHTML(locationText(record))}</td><td>${escapeHTML(record.effectiveTime ? record.effectiveTime.replace("T", " ") : "—")}</td><td class="number">${moneyText(record.unitTotal)}</td><td class="number">${moneyText(record.personalTotal)}</td><td class="number">${moneyText(record.combinedTotal)}</td><td class="number">${moneyText(record.cost)}</td><td><div class="row-actions"><button type="button" data-edit="${store.id}">编辑</button></div></td></tr>`).join("") : `<tr><td colspan="14"><div class="empty-state">没有符合条件的门店社保信息。</div></td></tr>`;
+    }
+
+    function renderAll() { renderTree(); renderTable(); }
+    function openEdit(storeId) {
+      const store = org(storeId), record = recordFor(storeId); if (!store || !record) return;
+      state.editingStoreId = storeId; byId("editTitle").textContent = `${store.name} — 编辑社保信息`;
+      byId("editStoreName").value = store.name; byId("editStatus").value = statusText(store.status); byId("editOrgCode").value = store.code; byId("editStoreCode").value = store.storeCode || ""; byId("editArea").value = ancestor(store, "area")?.name || ""; byId("editRegion").value = ancestor(store, "region")?.name || "";
+      byId("socialType").value = record.socialType; byId("effectiveTime").value = record.effectiveTime;
+      fillCascade("social", record.province, record.city, record.district);
+      [...amountFields, "housingRate"].forEach(field => { byId(field).value = record[field]; }); byId("socialRemark").value = record.remark;
+      byId("formErrors").hidden = true; openDialog("editDialog");
+    }
+
+    function renderLogs() {
+      byId("logsBody").innerHTML = logs.map((item, index) => `<tr><td>${escapeHTML(item.time)}</td><td>${escapeHTML(item.operator)}</td><td>${escapeHTML(item.action || item.source)}</td><td>${escapeHTML(item.source)}</td><td>${escapeHTML(item.store)}</td><td>${escapeHTML(item.note)}</td><td>${item.attachment || item.file ? `<button class="cell-link" type="button" data-log-file="${index}">查看</button>` : "—"}</td></tr>`).join("");
+    }
+
+    function attachmentFromFile(file) {
+      return new Promise(resolve => {
+        if (!file) return resolve(null);
+        const reader = new FileReader();
+        reader.addEventListener("load", () => resolve({ name: file.name, type: file.type || "application/vnd.ms-excel", url: reader.result }));
+        reader.addEventListener("error", () => resolve({ name: file.name, type: file.type || "application/vnd.ms-excel", content: "原文件读取失败，仅保留文件名。" }));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function openLogFile(item) {
+      const attachment = item?.attachment || (item?.file ? { name: item.file, type: "text/plain", content: "历史示例导入文件" } : null);
+      if (!attachment) return;
+      const url = attachment.url || URL.createObjectURL(new Blob([attachment.content || ""], { type: attachment.type || "application/octet-stream" }));
+      byId("fileDialogTitle").textContent = `查看导入文件 — ${attachment.name}`;
+      byId("fileDialogBody").innerHTML = `<div class="impact-box">导入文件：<strong>${escapeHTML(attachment.name)}</strong><br>可使用下方按钮下载原文件查看。</div>`;
+      byId("fileDownload").href = url; byId("fileDownload").download = attachment.name;
+      openDialog("fileDialog");
+    }
+
+    function exportRows() {
+      return rows().map(({ store, record, area, region }) => ({ store, record, area, region }));
+    }
+
+    function exportWorkbook() {
+      const result = exportRows();
+      const columns = [
+        { label: "门店名称", readonly: true, value: row => row.store.name }, { label: "组织编码", readonly: true, value: row => row.store.code }, { label: "门店编码", readonly: true, value: row => row.store.storeCode || "" }, { label: "门店状态", readonly: true, value: row => statusText(row.store.status) }, { label: "所属大区", readonly: true, value: row => row.area?.name || "" }, { label: "所属小区", readonly: true, value: row => row.region?.name || "" },
+        { label: "社保类型", value: row => socialTypeText(row.record.socialType).replace("—", "") }, { label: "生效时间", value: row => row.record.effectiveTime.replace("T", " ") }, { label: "社保缴纳省", value: row => row.record.province }, { label: "社保缴纳市", value: row => row.record.city }, { label: "社保缴纳区县", value: row => row.record.district },
+        { label: "社保基数（最低）", value: row => row.record.socialBase }, { label: "公积金基数（最低）", value: row => row.record.housingBase }, { label: "公积金缴费比例（%）", value: row => row.record.housingRate },
+        { label: "单位社保费用", value: row => row.record.unitSocial }, { label: "单位公积金", value: row => row.record.unitHousing }, { label: "单位残保金", value: row => row.record.unitDisability }, { label: "单位总费用", value: row => row.record.unitTotal },
+        { label: "个人社保费用", value: row => row.record.personalSocial }, { label: "个人公积金费用", value: row => row.record.personalHousing }, { label: "个人总费用", value: row => row.record.personalTotal }, { label: "社保公积金总费用", value: row => row.record.combinedTotal }, { label: "成本", value: row => row.record.cost }, { label: "社保备注", value: row => row.record.remark }
+      ];
+      downloadUpdateWorkbook("社保信息-当前结果.xls", { sheetName: "社保信息", columns, rows: result, matchKey: "组织编码", instructions: ["社保类型和生效时间必填。", "费用均为人工填写，系统不自动汇总。", "社保缴纳省、市、区县必须符合行政区划层级。"] });
+      showToast(`已导出${result.length}家门店的社保信息`);
+    }
+
+    byId("treeRoot").addEventListener("click", event => { const toggle = event.target.closest("[data-tree-toggle]"), select = event.target.closest("[data-tree-select]"); if (toggle) { const id = Number(toggle.dataset.treeToggle); state.expanded.has(id) ? state.expanded.delete(id) : state.expanded.add(id); renderTree(); } if (select) { state.selectedOrgId = select.dataset.treeSelect ? Number(select.dataset.treeSelect) : null; renderAll(); } });
+    byId("treeSearch").addEventListener("input", renderTree);
+    byId("expandButton").addEventListener("click", () => { organizations.filter(item => item.status === "active").forEach(item => state.expanded.add(item.id)); renderTree(); });
+    byId("collapseButton").addEventListener("click", () => { state.expanded.clear(); renderTree(); });
+    byId("filterProvince").addEventListener("change", () => fillCascade("filter", byId("filterProvince").value));
+    byId("filterCity").addEventListener("change", () => fillCascade("filter", byId("filterProvince").value, byId("filterCity").value));
+    byId("socialProvince").addEventListener("change", () => fillCascade("social", byId("socialProvince").value));
+    byId("socialCity").addEventListener("change", () => fillCascade("social", byId("socialProvince").value, byId("socialCity").value));
+    byId("filterForm").addEventListener("submit", event => { event.preventDefault(); state.filters = { storeName: byId("filterStoreName").value.trim(), orgCode: byId("filterOrgCode").value.trim(), storeCode: byId("filterStoreCode").value.trim(), status: byId("filterStatus").value, socialType: byId("filterSocialType").value, province: byId("filterProvince").value, city: byId("filterCity").value, district: byId("filterDistrict").value }; renderTable(); });
+    byId("filterForm").addEventListener("reset", () => setTimeout(() => { state.filters = { storeName: "", orgCode: "", storeCode: "", status: "", socialType: "", province: "", city: "", district: "" }; state.selectedOrgId = null; fillCascade("filter"); renderAll(); }, 0));
+    byId("tableBody").addEventListener("click", event => { const button = event.target.closest("[data-edit]"); if (button) openEdit(Number(button.dataset.edit)); });
+
+    byId("socialForm").addEventListener("submit", event => {
+      event.preventDefault(); const record = recordFor(state.editingStoreId), store = org(state.editingStoreId); if (!record || !store) return;
+      const next = { socialType: byId("socialType").value, effectiveTime: byId("effectiveTime").value, province: byId("socialProvince").value, city: byId("socialCity").value, district: byId("socialDistrict").value, remark: byId("socialRemark").value.trim() };
+      [...amountFields, "housingRate"].forEach(field => { next[field] = byId(field).value.trim(); });
+      const errors = []; if (!next.socialType) errors.push("请选择社保类型"); if (!next.effectiveTime) errors.push("请选择生效时间");
+      amountFields.forEach(field => { if (next[field] && (!/^\d+(\.\d{1,2})?$/.test(next[field]) || Number(next[field]) < 0)) errors.push(`${socialFields.find(item => item[0] === field)?.[1] || field}必须是非负数，且最多两位小数`); });
+      if (next.housingRate && (!/^\d+(\.\d{1,2})?$/.test(next.housingRate) || Number(next.housingRate) < 0 || Number(next.housingRate) > 100)) errors.push("公积金缴费比例必须在0%至100%之间，且最多两位小数");
+      byId("formErrors").innerHTML = errors.map(error => `<div>• ${escapeHTML(error)}</div>`).join(""); byId("formErrors").hidden = !errors.length; if (errors.length) return;
+      const changes = socialFields.map(([field, label, formatter]) => fieldChange(label, record[field], next[field], formatter || logValue)).filter(Boolean);
+      if (changes.length) { Object.assign(record, next); logs.unshift({ time: Shared.localDateTime(), operator: "张明", action: "编辑社保信息", source: "页面编辑", store: `${store.name}（${store.code}）`, note: changes.join("；"), attachment: null }); Shared.save(); showToast("社保信息已保存"); } else showToast("未检测到字段变更");
+      closeDialog("editDialog"); renderTable();
+    });
+
+    byId("exportButton").addEventListener("click", exportWorkbook);
+    byId("importButton").addEventListener("click", () => { state.importGeneration += 1; state.importReady = false; state.importFileName = ""; state.importAttachment = null; byId("importFile").value = ""; byId("importFileName").textContent = "尚未选择文件"; byId("importPreview").innerHTML = ""; byId("confirmImportButton").disabled = true; byId("confirmImportButton").textContent = "确认导入"; byId("importDialog").querySelector(".dialog-footer [data-close]").textContent = "取消"; openDialog("importDialog"); });
+    function socialImportCounts() {
+      const first = recordFor(6), second = recordFor(7);
+      const success = Number(Boolean(first && first.unitTotal !== "2550.00")) + Number(Boolean(second && second.cost !== "2420.00"));
+      return { success, failure: 1, unchanged: 2 - success };
+    }
+    function prepareImport(name, attachment) {
+      state.importReady = true; state.importFileName = name; state.importAttachment = attachment || { name, type: "text/plain", content: "社保信息导入更新示例文件" };
+      const counts = socialImportCounts();
+      byId("importFileName").textContent = name; byId("confirmImportButton").disabled = false;
+      byId("importPreview").innerHTML = `<div class="warning-box mt-16">共${counts.success + counts.failure + counts.unchanged}条；校验通过可导入${counts.success}条，校验失败${counts.failure}条，无变化${counts.unchanged}条。失败原因：第4行修改了“门店状态（不可修改）”。 <button class="cell-link" type="button" id="downloadFailureButton">下载失败明细</button></div>`;
+    }
+    byId("importFile").addEventListener("change", async event => {
+      const file = event.target.files[0], generation = ++state.importGeneration;
+      if (!file) return;
+      state.importReady = false; state.importFileName = ""; state.importAttachment = null;
+      byId("importFileName").textContent = `正在读取 ${file.name}…`; byId("confirmImportButton").disabled = true; byId("confirmImportButton").textContent = "确认导入"; byId("importDialog").querySelector(".dialog-footer [data-close]").textContent = "取消"; byId("importPreview").innerHTML = "";
+      const attachment = await attachmentFromFile(file);
+      if (generation !== state.importGeneration) return;
+      prepareImport(file.name, attachment);
+    });
+    byId("exportForUpdateButton").addEventListener("click", exportWorkbook);
+    byId("loadExampleButton").addEventListener("click", () => prepareImport("社保信息-当前结果-已修改.xls"));
+    byId("importPreview").addEventListener("click", event => { if (!event.target.closest("#downloadFailureButton")) return; downloadBlob("社保信息导入失败明细.csv", "\ufeff行号,组织编码,字段,失败原因\n4,ORG-STORE-006,门店状态,不可修改字段与系统值不一致\n", "text/csv;charset=utf-8"); });
+    byId("confirmImportButton").addEventListener("click", () => {
+      if (!state.importReady) return;
+      state.importGeneration += 1;
+      const attachment = state.importAttachment || { name: state.importFileName || "社保信息导入文件.xls", type: "text/plain", content: "社保信息导入文件" };
+      const updates = [{ storeId: 6, field: "unitTotal", label: "单位总费用", value: "2550.00" }, { storeId: 7, field: "cost", label: "成本", value: "2420.00" }];
+      const time = Shared.localDateTime(); let success = 0, unchanged = 0;
+      updates.forEach(update => {
+        const record = recordFor(update.storeId), store = org(update.storeId); if (!record || !store) return;
+        const change = fieldChange(update.label, record[update.field], update.value);
+        if (!change) { unchanged += 1; return; }
+        record[update.field] = update.value; success += 1;
+        logs.unshift({ time, operator: "张明", action: "导入更新明细", source: "导入更新", store: `${store.name}（${store.code}）`, note: change, attachment });
+      });
+      logs.unshift({ time, operator: "张明", action: "导入更新失败", source: "导入更新", store: "ORG-STORE-006", note: "失败原因：门店状态为不可修改字段，文件值与系统值不一致", attachment });
+      logs.unshift({ time, operator: "张明", action: "导入更新批次", source: "导入更新", store: "全部门店", note: `批次结果：成功${success}条，失败1条，无变化${unchanged}条`, attachment });
+      state.importReady = false; byId("confirmImportButton").disabled = true; byId("confirmImportButton").textContent = "导入完成"; byId("importDialog").querySelector(".dialog-footer [data-close]").textContent = "关闭";
+      byId("importPreview").innerHTML = `<div class="warning-box mt-16">导入完成：成功${success}条，失败1条，无变化${unchanged}条。 <button class="cell-link" type="button" id="downloadFailureButton">下载失败明细</button></div>`;
+      Shared.save(); renderTable(); showToast(`导入完成：成功${success}条，失败1条，无变化${unchanged}条`);
+    });
+    byId("logsButton").addEventListener("click", () => { renderLogs(); openDialog("logsDialog"); });
+    byId("logsBody").addEventListener("click", event => { const button = event.target.closest("[data-log-file]"); if (!button) return; openLogFile(logs[Number(button.dataset.logFile)]); });
+
+    fillCascade("filter"); fillCascade("social"); renderAll();
+  </script>
+</body>
+</html>
