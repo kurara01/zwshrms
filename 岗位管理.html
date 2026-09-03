@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>岗位管理｜杂物社人事系统</title>
+  <link rel="stylesheet" href="./prototype-common.css" />
+  <style>
+    .position-table .name-col { width: 170px; }
+    .position-table .grade-col { width: 230px; }
+    .position-table .coefficient-col { width: 110px; }
+    .position-table .status-col { width: 90px; }
+    .position-table .remark-col { width: 260px; }
+    .position-table .action-col { width: 160px; }
+    .grade-picker { position: relative; }
+    .grade-picker-trigger { padding: 0 10px; display: flex; align-items: center; justify-content: space-between; text-align: left; cursor: pointer; }
+    .grade-picker-trigger::after { content: "⌄"; margin-left: 8px; color: var(--text-secondary); }
+    .grade-picker-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 30; padding: 6px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: 0 8px 24px rgba(0,0,0,.14); }
+    .grade-picker-options { max-height: 240px; overflow: auto; }
+    .grade-picker-option { min-height: 32px; padding: 6px 10px; display: flex; align-items: center; gap: 8px; border-radius: var(--radius-sm); cursor: pointer; }
+    .grade-picker-option:hover, .grade-picker-option.selected { color: var(--brand); background: var(--brand-light); }
+    .grade-picker-option input { margin: 0; }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">跳到主内容</a>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="主导航">
+      <div class="brand"><div class="brand-mark" aria-hidden="true">九</div><div class="brand-copy"><div class="brand-name">杂物社 · 人事系统</div><div class="brand-version">业务评审原型 v1.2</div></div></div>
+      <nav class="nav-scroll">
+        <section class="nav-group">
+          <button class="nav-group-trigger" type="button" aria-expanded="true"><span class="nav-arrow" aria-hidden="true">▶</span><span class="nav-label">组织人事</span></button>
+          <div class="nav-items">
+            <a class="nav-item" href="./组织基础信息表.html">组织架构</a>
+            <a class="nav-item active" href="./岗位管理.html" aria-current="page">岗位管理</a>
+            <a class="nav-item" href="./编制管理.html">编制管理</a>
+          </div>
+        </section>
+        <section class="nav-group">
+          <button class="nav-group-trigger" type="button" aria-expanded="true"><span class="nav-arrow" aria-hidden="true">▶</span><span class="nav-label">考勤管理</span></button>
+          <div class="nav-items"><a class="nav-item" href="./标准工时维护.html">标准工时维护</a></div>
+        </section>
+      </nav>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar"><div class="topbar-left"><button class="icon-button" id="sidebarToggle" type="button" aria-label="展开或收起侧边栏">☰</button><nav class="breadcrumbs" aria-label="面包屑"><span>首页</span><span class="separator">/</span><span>组织人事</span><span class="separator">/</span><span class="current">岗位管理</span></nav></div><div class="topbar-right"><button class="user-chip" type="button"><span class="avatar" aria-hidden="true">张</span><span class="user-name">张明</span></button></div></header>
+
+      <main class="page-scroll" id="mainContent" tabindex="-1">
+        <header class="page-heading">
+          <div><div class="page-title-row"><h1>岗位管理</h1></div><p class="page-description">维护岗位名称、适用职等、编制占用数量及启停状态</p></div>
+          <div class="page-actions"><button class="button" id="logsButton" type="button">操作日志</button></div>
+        </header>
+        <form class="filter-card card" id="filterForm">
+          <div class="filter-grid">
+            <div class="field"><label for="filterKeyword">岗位名称</label><input class="input" id="filterKeyword" type="search" placeholder="请输入岗位名称" /></div>
+            <div class="field"><label for="filterGrade">适用职等</label><select class="select" id="filterGrade"><option value="">全部职等</option></select></div>
+            <div class="field"><label for="filterCoefficient">编制占用数量</label><select class="select" id="filterCoefficient"><option value="">全部</option><option value="1">1</option><option value="0.5">0.5</option></select></div>
+            <div class="field"><label for="filterStatus">岗位状态</label><select class="select" id="filterStatus"><option value="">全部状态</option><option value="active">启用</option><option value="inactive">停用</option></select></div>
+            <div class="filter-actions"><button class="button primary" type="submit">查询</button><button class="button" type="reset">重置</button></div>
+          </div>
+        </form>
+
+        <section class="table-card card mt-14">
+          <header class="table-toolbar"><div class="toolbar-actions"><button class="button primary" id="addButton" type="button">新增岗位</button><button class="button" id="importButton" type="button">批量导入</button><button class="button" id="exportButton" type="button">导出当前结果</button></div><div class="toolbar-summary">共 <strong id="totalCount">0</strong> 条岗位</div></header>
+          <div class="table-note">已停用岗位仍保留历史关联，但不能在新的人员或编制记录中选择。</div>
+          <div class="table-scroll"><table class="data-table position-table"><caption class="sr-only">岗位列表</caption><thead><tr><th class="name-col">岗位名称</th><th class="grade-col">适用职等</th><th class="coefficient-col">编制占用数量</th><th class="status-col">岗位状态</th><th class="remark-col">备注</th><th class="action-col">操作</th></tr></thead><tbody id="tableBody"></tbody></table></div>
+          <footer class="pagination"><span id="paginationInfo"></span><div><button class="page-button active" type="button" aria-current="page">1</button></div></footer>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="positionDialog" class="wide" aria-labelledby="positionDialogTitle">
+    <form class="dialog-shell" id="positionForm" novalidate>
+      <header class="dialog-header"><h2 id="positionDialogTitle">新增岗位</h2><button class="icon-button" type="button" data-close="positionDialog" aria-label="关闭岗位表单">✕</button></header>
+      <div class="dialog-body"><div class="form-errors" id="formErrors" hidden></div><div class="form-grid">
+        <div class="field"><label class="required" for="positionName">岗位名称</label><input class="input" id="positionName" maxlength="40" /></div>
+        <div class="field"><label class="required" for="positionCoefficient">编制占用数量</label><select class="select" id="positionCoefficient"><option value="1">1</option><option value="0.5">0.5</option></select></div>
+        <div class="field"><label class="required" for="positionStatus">岗位状态</label><select class="select" id="positionStatus"><option value="active">启用</option><option value="inactive">停用</option></select></div>
+        <div class="field"><span class="field-label required" id="positionGradesLabel">适用职等</span><div class="grade-picker" id="gradePicker"><button class="select grade-picker-trigger" id="gradePickerTrigger" type="button" aria-labelledby="positionGradesLabel gradeSelectionText" aria-haspopup="listbox" aria-controls="gradeOptions" aria-expanded="false"><span id="gradeSelectionText">请选择适用职等</span></button><div class="grade-picker-dropdown" id="gradePickerDropdown" hidden><div class="grade-picker-options" id="gradeOptions" role="listbox" aria-label="适用职等" aria-multiselectable="true"></div></div></div></div>
+        <div class="field full"><label for="positionRemark">备注</label><textarea class="textarea" id="positionRemark" maxlength="200" placeholder="请输入岗位说明"></textarea></div>
+      </div></div>
+      <footer class="dialog-footer"><button class="button" type="button" data-close="positionDialog">取消</button><button class="button primary" type="submit">保存</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="detailDialog" class="wide" aria-labelledby="detailTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="detailTitle">岗位详情</h2><button class="icon-button" type="button" data-close="detailDialog" aria-label="关闭岗位详情">✕</button></header><div class="dialog-body" id="detailBody"></div><footer class="dialog-footer" id="detailFooter"></footer></div></dialog>
+
+  <dialog id="logsDialog" class="wide" aria-labelledby="logsTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="logsTitle">岗位操作日志</h2><button class="icon-button" type="button" data-close="logsDialog" aria-label="关闭日志">✕</button></header><div class="dialog-body"><table class="log-list"><thead><tr><th>时间</th><th>操作人</th><th>操作</th><th>岗位</th><th>说明</th></tr></thead><tbody id="logsBody"></tbody></table></div><footer class="dialog-footer"><button class="button" type="button" data-close="logsDialog">关闭</button></footer></div></dialog>
+
+  <dialog id="toggleDialog" class="narrow" aria-labelledby="toggleTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="toggleTitle">确认岗位状态变更</h2><button class="icon-button" type="button" data-close="toggleDialog" aria-label="关闭状态确认">✕</button></header><div class="dialog-body" id="toggleBody"></div><footer class="dialog-footer"><button class="button" type="button" data-close="toggleDialog">取消</button><button class="button" id="confirmToggleButton" type="button">确认</button></footer></div></dialog>
+
+  <dialog id="importDialog" class="wide" aria-labelledby="importTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="importTitle">批量导入岗位</h2><button class="icon-button" type="button" data-close="importDialog" aria-label="关闭导入">✕</button></header><div class="dialog-body"><ol class="import-steps"><li>下载模板并填写岗位名称、适用职等、编制占用数量、状态和备注。</li><li>岗位名称不存在时新增，已存在时更新。</li><li>校验岗位名称唯一、职等范围和占用数量后再确认导入。</li></ol><div class="upload-box"><p>原型使用示例文件演示校验结果</p><div class="upload-actions"><button class="button" id="downloadTemplateButton" type="button">下载模板</button><button class="button" id="loadExampleButton" type="button">加载示例文件</button></div></div><div id="importPreview"></div></div><footer class="dialog-footer"><button class="button" type="button" data-close="importDialog">取消</button><button class="button primary" id="confirmImportButton" type="button" disabled>确认导入</button></footer></div></dialog>
+
+  <script src="./prototype-common.js"></script>
+  <script>
+    "use strict";
+    const { byId, escapeHTML, showToast, openDialog, closeDialog } = window.PrototypeUI;
+    const statusMeta = { active: ["启用", "success"], inactive: ["停用", "info"] };
+    let positions = [
+      { id: 1, name: "高级店长", grades: [11, 12], coefficient: 1, status: "active", remark: "重点门店负责人" },
+      { id: 2, name: "店长", grades: [9, 10], coefficient: 1, status: "active", remark: "门店负责人" },
+      { id: 3, name: "店助", grades: [7, 8], coefficient: 1, status: "active", remark: "协助门店经营管理" },
+      { id: 4, name: "高级导购", grades: [5, 6], coefficient: 1, status: "active", remark: "承担销售与带教" },
+      { id: 5, name: "导购", grades: [3, 4], coefficient: 1, status: "active", remark: "门店销售岗位" },
+      { id: 6, name: "兼职", grades: [1, 2], coefficient: 0.5, status: "active", remark: "社会兼职人员" },
+      { id: 7, name: "实习生", grades: [1, 2], coefficient: 0.5, status: "active", remark: "在校实习人员" },
+      { id: 8, name: "管培生", grades: [3, 4], coefficient: 1, status: "inactive", remark: "历史岗位，暂停使用" }
+    ];
+    let logs = [
+      { time: "2026-09-02 14:30:00", operator: "张明", action: "编辑岗位", target: "兼职", note: "编制占用数量调整为0.5" },
+      { time: "2026-09-02 14:12:00", operator: "张明", action: "编辑岗位", target: "店长", note: "适用职等调整为9、10" }
+    ];
+    const state = { editingId: null, togglingId: null, filters: { keyword: "", grade: "", coefficient: "", status: "" }, importReady: false };
+
+    function tag(status) { const meta = statusMeta[status] || statusMeta.inactive; return `<span class="tag ${meta[1]}">${meta[0]}</span>`; }
+    function gradeText(grades) { return [...grades].sort((a, b) => a - b).join("、"); }
+    function addLog(action, target, note) { logs.unshift({ time: new Date().toLocaleString("zh-CN", { hour12: false }).replaceAll("/", "-"), operator: "张明", action, target, note }); }
+    function selectedGrades() { return [...document.querySelectorAll('input[name="positionGrade"]:checked')].map(item => Number(item.value)); }
+    function rows() {
+      const keyword = state.filters.keyword.toLowerCase();
+      return positions.filter(item => (!keyword || item.name.toLowerCase().includes(keyword)) && (!state.filters.grade || item.grades.includes(Number(state.filters.grade))) && (!state.filters.coefficient || item.coefficient === Number(state.filters.coefficient)) && (!state.filters.status || item.status === state.filters.status));
+    }
+    function render() {
+      const result = rows(); byId("totalCount").textContent = result.length; byId("paginationInfo").textContent = result.length ? `显示1–${result.length}条，共${result.length}条` : "共0条";
+      byId("tableBody").innerHTML = result.length ? result.map(item => `<tr><td><button class="cell-link" type="button" data-action="detail" data-id="${item.id}">${escapeHTML(item.name)}</button></td><td>${escapeHTML(gradeText(item.grades))}</td><td class="number">${item.coefficient}</td><td>${tag(item.status)}</td><td title="${escapeHTML(item.remark)}">${escapeHTML(item.remark || "—")}</td><td><div class="row-actions"><button type="button" data-action="detail" data-id="${item.id}">详情</button><button type="button" data-action="edit" data-id="${item.id}">编辑</button><button type="button" data-action="toggle" data-id="${item.id}">${item.status === "active" ? "停用" : "启用"}</button></div></td></tr>`).join("") : `<tr><td colspan="6"><div class="empty-state">没有符合条件的岗位。</div></td></tr>`;
+    }
+    function fillGradeOptions() {
+      byId("filterGrade").innerHTML = `<option value="">全部职等</option>${Array.from({ length: 21 }, (_, i) => `<option value="${i}">${i}</option>`).join("")}`;
+      byId("gradeOptions").innerHTML = Array.from({ length: 21 }, (_, i) => `<label class="grade-picker-option" role="option" aria-selected="false"><input type="checkbox" name="positionGrade" value="${i}" /><span>${i}</span></label>`).join("");
+    }
+    function updateGradeSelection() { const grades = selectedGrades().sort((a, b) => a - b); byId("gradeSelectionText").textContent = grades.length ? grades.join("、") : "请选择适用职等"; document.querySelectorAll(".grade-picker-option").forEach(option => { const selected = option.querySelector("input").checked; option.classList.toggle("selected", selected); option.setAttribute("aria-selected", String(selected)); }); }
+    function closeGradePicker() { byId("gradePickerDropdown").hidden = true; byId("gradePickerTrigger").setAttribute("aria-expanded", "false"); }
+    function openForm(id = null) {
+      state.editingId = id; const item = positions.find(row => row.id === id);
+      byId("positionDialogTitle").textContent = item ? "编辑岗位" : "新增岗位";
+      byId("positionName").value = item?.name || ""; byId("positionCoefficient").value = String(item?.coefficient ?? 1); byId("positionStatus").value = item?.status || "active"; byId("positionStatus").disabled = Boolean(item); byId("positionRemark").value = item?.remark || "";
+      document.querySelectorAll('input[name="positionGrade"]').forEach(input => { input.checked = Boolean(item?.grades.includes(Number(input.value))); });
+      updateGradeSelection(); closeGradePicker(); byId("formErrors").hidden = true; openDialog("positionDialog");
+    }
+    function openDetail(id) {
+      const item = positions.find(row => row.id === id); if (!item) return;
+      byId("detailTitle").textContent = `${item.name} — 岗位详情`;
+      byId("detailBody").innerHTML = `<section class="dialog-section"><h3 class="section-title">岗位定义</h3><dl class="description-grid"><div class="description-item"><dt>岗位名称</dt><dd>${escapeHTML(item.name)}</dd></div><div class="description-item"><dt>岗位状态</dt><dd>${tag(item.status)}</dd></div><div class="description-item"><dt>适用职等</dt><dd>${escapeHTML(gradeText(item.grades))}</dd></div><div class="description-item"><dt>编制占用数量</dt><dd>${item.coefficient}</dd></div><div class="description-item"><dt>备注</dt><dd>${escapeHTML(item.remark || "—")}</dd></div></dl></section>`;
+      byId("detailFooter").innerHTML = `<button class="button primary" type="button" data-detail-edit="${item.id}">编辑</button><button class="button" type="button" data-close="detailDialog">关闭</button>`; openDialog("detailDialog");
+    }
+    function openToggleConfirm(id) { const item = positions.find(row => row.id === id); if (!item) return; const enabling = item.status === "inactive"; state.togglingId = id; byId("toggleTitle").textContent = enabling ? "确认启用岗位？" : "确认停用岗位？"; byId("toggleBody").innerHTML = `<div class="${enabling ? "impact-box" : "warning-box"}">确认${enabling ? "启用" : "停用"}岗位 <strong>${escapeHTML(item.name)}</strong>？${enabling ? "启用后岗位恢复可用。" : "停用后保留历史关联记录。"}</div>`; const button = byId("confirmToggleButton"); button.textContent = `确认${enabling ? "启用" : "停用"}`; button.className = `button ${enabling ? "primary" : "danger"}`; openDialog("toggleDialog"); }
+    function renderLogs() { byId("logsBody").innerHTML = logs.map(item => `<tr><td>${escapeHTML(item.time)}</td><td>${escapeHTML(item.operator)}</td><td>${escapeHTML(item.action)}</td><td>${escapeHTML(item.target)}</td><td>${escapeHTML(item.note)}</td></tr>`).join(""); }
+    function download(filename, content) { const url = URL.createObjectURL(new Blob(["\ufeff" + content], { type: "text/csv;charset=utf-8" })); const link = document.createElement("a"); link.href = url; link.download = filename; link.click(); URL.revokeObjectURL(url); }
+
+    byId("filterForm").addEventListener("submit", event => { event.preventDefault(); state.filters = { keyword: byId("filterKeyword").value.trim(), grade: byId("filterGrade").value, coefficient: byId("filterCoefficient").value, status: byId("filterStatus").value }; render(); });
+    byId("filterForm").addEventListener("reset", () => setTimeout(() => { state.filters = { keyword: "", grade: "", coefficient: "", status: "" }; render(); }, 0));
+    byId("gradePickerTrigger").addEventListener("click", () => { const dropdown = byId("gradePickerDropdown"), opening = dropdown.hidden; dropdown.hidden = !opening; byId("gradePickerTrigger").setAttribute("aria-expanded", String(opening)); });
+    byId("gradeOptions").addEventListener("change", updateGradeSelection);
+    byId("gradePicker").addEventListener("keydown", event => { if (event.key === "Escape") { closeGradePicker(); byId("gradePickerTrigger").focus(); } });
+    document.addEventListener("click", event => { if (!event.target.closest("#gradePicker")) closeGradePicker(); });
+    byId("addButton").addEventListener("click", () => openForm());
+    byId("tableBody").addEventListener("click", event => { const button = event.target.closest("[data-action]"); if (!button) return; const id = Number(button.dataset.id), item = positions.find(row => row.id === id); if (!item) return; if (button.dataset.action === "detail") openDetail(id); if (button.dataset.action === "edit") openForm(id); if (button.dataset.action === "toggle") openToggleConfirm(id); });
+    byId("detailFooter").addEventListener("click", event => { const button = event.target.closest("[data-detail-edit]"); if (button) { closeDialog("detailDialog"); openForm(Number(button.dataset.detailEdit)); } });
+    byId("confirmToggleButton").addEventListener("click", () => { const item = positions.find(row => row.id === state.togglingId); if (!item) return; item.status = item.status === "active" ? "inactive" : "active"; addLog(item.status === "active" ? "启用岗位" : "停用岗位", item.name, "岗位状态变更"); closeDialog("toggleDialog"); render(); showToast(`岗位已${item.status === "active" ? "启用" : "停用"}`); });
+    byId("positionForm").addEventListener("submit", event => {
+      event.preventDefault(); const name = byId("positionName").value.trim(), grades = selectedGrades(), coefficient = Number(byId("positionCoefficient").value), status = byId("positionStatus").value, remark = byId("positionRemark").value.trim(), errors = [];
+      if (!name) errors.push("请输入岗位名称"); if (positions.some(item => item.name === name && item.id !== state.editingId)) errors.push("岗位名称已存在"); if (!grades.length) errors.push("请至少选择一个适用职等"); if (![0.5, 1].includes(coefficient)) errors.push("编制占用数量只能为0.5或1");
+      byId("formErrors").innerHTML = errors.map(error => `<div>• ${escapeHTML(error)}</div>`).join(""); byId("formErrors").hidden = !errors.length; if (errors.length) return;
+      const existing = positions.find(item => item.id === state.editingId);
+      if (existing) { const changedCoefficient = existing.coefficient !== coefficient; Object.assign(existing, { name, grades, coefficient, status, remark }); addLog("编辑岗位", name, changedCoefficient ? `编制占用数量改为${coefficient}，相关编制已重新计算` : "更新岗位定义"); showToast(changedCoefficient ? "岗位已保存，相关编制实际数量已重新计算" : "岗位已保存"); }
+      else { positions.unshift({ id: Math.max(...positions.map(item => item.id)) + 1, name, grades, coefficient, status, remark }); addLog("新增岗位", name, `适用职等：${gradeText(grades)}`); showToast("岗位已新增"); }
+      closeDialog("positionDialog"); render();
+    });
+    byId("logsButton").addEventListener("click", () => { renderLogs(); openDialog("logsDialog"); });
+    byId("importButton").addEventListener("click", () => { state.importReady = false; byId("confirmImportButton").disabled = true; byId("importPreview").innerHTML = ""; openDialog("importDialog"); });
+    byId("loadExampleButton").addEventListener("click", () => { state.importReady = true; byId("confirmImportButton").disabled = false; byId("importPreview").innerHTML = `<div class="warning-box mt-16">岗位导入示例.xlsx：共4条；新增2条、更新1条、失败1条。失败原因：第5行适用职等为空。</div>`; });
+    byId("confirmImportButton").addEventListener("click", () => { if (!state.importReady) return; closeDialog("importDialog"); addLog("批量导入", "岗位主数据", "新增2条、更新1条、失败1条"); showToast("岗位导入完成：成功3条，失败1条"); });
+    byId("downloadTemplateButton").addEventListener("click", () => download("岗位导入模板.csv", "岗位名称,适用职等,编制占用数量,岗位状态,备注\n"));
+    byId("exportButton").addEventListener("click", () => { const result = rows(); download("岗位列表.csv", ["岗位名称,适用职等,编制占用数量,岗位状态,备注", ...result.map(item => `${item.name},\"${gradeText(item.grades)}\",${item.coefficient},${statusMeta[item.status][0]},${item.remark}`)].join("\n")); showToast(`已导出${result.length}条岗位`); });
+
+    fillGradeOptions(); render();
+  </script>
+</body>
+</html>

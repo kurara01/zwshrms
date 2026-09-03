@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>编制管理｜杂物社人事系统</title>
+  <link rel="stylesheet" href="./prototype-common.css" />
+  <style>
+    .headcount-filter-grid { grid-template-columns: repeat(4, minmax(130px, 1fr)); }
+    .headcount-filter-grid .filter-actions { grid-column: 4; justify-self: end; }
+    .headcount-table { min-width: 1420px; }
+    .headcount-table .code-col { width: 126px; }
+    .headcount-table .store-col { width: 160px; }
+    .headcount-table .store-code-col { width: 110px; }
+    .headcount-table .position-col { width: 120px; }
+    .headcount-table .type-col { width: 88px; }
+    .headcount-table .period-col { width: 210px; }
+    .headcount-table .qty-col { width: 92px; }
+    .headcount-table .status-col { width: 110px; }
+    .headcount-table .action-col { width: 180px; }
+    .person-table { width: 100%; border-collapse: collapse; }
+    .person-table th, .person-table td { padding: 10px 8px; border-bottom: 1px solid var(--border-lighter); text-align: left; }
+    .person-table th { color: var(--text-regular); background: #fafafa; font-weight: 500; }
+    .store-picker { position: relative; }
+    .store-picker-trigger { padding: 0 10px; display: flex; align-items: center; justify-content: space-between; text-align: left; cursor: pointer; }
+    .store-picker-trigger::after { content: "⌄"; margin-left: 8px; color: var(--text-secondary); }
+    .store-picker-trigger:disabled { cursor: not-allowed; }
+    .store-picker-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 30; padding: 8px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: 0 8px 24px rgba(0,0,0,.14); }
+    .store-picker-options { max-height: 220px; margin-top: 6px; overflow: auto; }
+    .store-picker-option { width: 100%; padding: 8px 10px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-primary); cursor: pointer; line-height: 20px; text-align: left; }
+    .store-picker-option:hover, .store-picker-option.selected { background: var(--brand-light); color: var(--brand); }
+    .store-picker-empty { padding: 14px 10px; color: var(--text-secondary); text-align: center; }
+    @media (max-width: 1380px) {
+      .headcount-filter-grid { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+      .headcount-filter-grid .filter-actions { grid-column: 1 / -1; justify-self: start; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">跳到主内容</a>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="主导航">
+      <div class="brand"><div class="brand-mark" aria-hidden="true">九</div><div class="brand-copy"><div class="brand-name">杂物社 · 人事系统</div><div class="brand-version">业务评审原型 v1.2</div></div></div>
+      <nav class="nav-scroll">
+        <section class="nav-group"><button class="nav-group-trigger" type="button" aria-expanded="true"><span class="nav-arrow" aria-hidden="true">▶</span><span class="nav-label">组织人事</span></button><div class="nav-items"><a class="nav-item" href="./组织基础信息表.html">组织架构</a><a class="nav-item" href="./岗位管理.html">岗位管理</a><a class="nav-item active" href="./编制管理.html" aria-current="page">编制管理</a></div></section>
+        <section class="nav-group"><button class="nav-group-trigger" type="button" aria-expanded="true"><span class="nav-arrow" aria-hidden="true">▶</span><span class="nav-label">考勤管理</span></button><div class="nav-items"><a class="nav-item" href="./标准工时维护.html">标准工时维护</a></div></section>
+      </nav>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar"><div class="topbar-left"><button class="icon-button" id="sidebarToggle" type="button" aria-label="展开或收起侧边栏">☰</button><nav class="breadcrumbs" aria-label="面包屑"><span>首页</span><span class="separator">/</span><span>组织人事</span><span class="separator">/</span><span class="current">编制管理</span></nav></div><div class="topbar-right"><button class="user-chip" type="button"><span class="avatar" aria-hidden="true">张</span><span class="user-name">张明</span></button></div></header>
+
+      <main class="page-scroll" id="mainContent" tabindex="-1">
+        <header class="page-heading"><div><div class="page-title-row"><h1>编制管理</h1></div><p class="page-description">按独立编制席位维护门店岗位、有效期、计划数量和人员占用结果</p></div><div class="page-actions"><button class="button" id="logsButton" type="button">操作日志</button></div></header>
+        <div class="scope-layout">
+          <aside class="tree-card card" aria-label="组织范围"><header class="card-header"><span>组织范围</span><span class="tag brand">仅门店有编制</span></header><div class="tree-search"><label class="sr-only" for="treeSearch">搜索组织</label><input class="input" id="treeSearch" type="search" placeholder="搜索组织名称" /></div><div class="tree-meta">选择任一节点查看当前组织及全部下级</div><div class="tree-root" id="treeRoot" role="tree"></div></aside>
+
+          <section class="content-stack" aria-label="编制明细">
+            <form class="filter-card card" id="filterForm"><div class="filter-grid headcount-filter-grid">
+              <div class="field"><label for="filterCode">编制编码</label><input class="input" id="filterCode" type="search" placeholder="例如 HC00000001" /></div>
+              <div class="field"><label for="filterStoreCode">门店编码</label><input class="input mono" id="filterStoreCode" type="search" placeholder="请输入门店编码" /></div>
+              <div class="field"><label for="filterPosition">编制岗位</label><select class="select" id="filterPosition"><option value="">全部岗位</option></select></div>
+              <div class="field"><label for="filterType">编制类型</label><select class="select" id="filterType"><option value="">全部类型</option><option value="formal">正式编制</option><option value="temporary">临时编制</option></select></div>
+              <div class="field"><label for="filterLifecycle">生命周期状态</label><select class="select" id="filterLifecycle"><option value="">全部状态</option><option value="pending">待生效</option><option value="active">生效中</option><option value="expired">已失效</option><option value="stopped">已停用</option></select></div>
+              <div class="field"><label for="filterOccupancy">占用状态</label><select class="select" id="filterOccupancy"><option value="">全部状态</option><option value="empty">空编</option><option value="partial">部分占用</option><option value="full">满编</option><option value="over">超编待处理</option></select></div>
+              <div class="filter-actions"><button class="button primary" type="submit">查询</button><button class="button" type="reset">重置</button></div>
+            </div></form>
+
+            <section class="stats-grid" aria-label="编制汇总">
+              <div class="stat-card card"><div class="stat-label">生效中编制</div><div class="stat-value" id="activeStat">0</div><div class="stat-help">生命周期状态为生效中</div></div>
+              <div class="stat-card card"><div class="stat-label">计划数量</div><div class="stat-value" id="plannedStat">0</div><div class="stat-help">当前范围内计划数量之和</div></div>
+              <div class="stat-card card"><div class="stat-label">实际数量</div><div class="stat-value" id="actualStat">0</div><div class="stat-help">按关联人员岗位占用数量汇总</div></div>
+              <div class="stat-card card"><div class="stat-label">超编待处理</div><div class="stat-value danger" id="overStat">0</div><div class="stat-help">实际数量大于计划数量</div></div>
+            </section>
+
+            <section class="table-card card">
+              <header class="table-toolbar"><div class="toolbar-actions"><button class="button primary" id="addButton" type="button">新增编制</button><button class="button" id="importCreateButton" type="button">导入新增</button><button class="button" id="importUpdateButton" type="button">导入更新</button><button class="button" id="exportButton" type="button">导出当前结果</button></div><div class="toolbar-summary"><span class="scope-chip" id="selectedScope">全部组织</span><span>共 <strong id="totalCount">0</strong> 条</span></div></header>
+              <div class="table-scroll"><table class="data-table headcount-table"><caption class="sr-only">编制明细列表</caption><thead><tr><th class="code-col">编制编码</th><th class="store-col">门店</th><th class="store-code-col">门店编码</th><th class="position-col">编制岗位</th><th class="type-col">编制类型</th><th class="period-col">有效期</th><th class="qty-col">计划数量</th><th class="qty-col">实际数量</th><th class="status-col">生命周期</th><th class="status-col">占用状态</th><th class="action-col">操作</th></tr></thead><tbody id="tableBody"></tbody></table></div>
+              <footer class="pagination"><span id="paginationInfo"></span><div><button class="page-button active" type="button" aria-current="page">1</button></div></footer>
+            </section>
+          </section>
+        </div>
+      </main>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="headcountDialog" class="wide" aria-labelledby="headcountTitle"><form class="dialog-shell" id="headcountForm" novalidate><header class="dialog-header"><h2 id="headcountTitle">新增编制</h2><button class="icon-button" type="button" data-close="headcountDialog" aria-label="关闭编制表单">✕</button></header><div class="dialog-body"><div class="form-errors" id="formErrors" hidden></div><div class="form-grid">
+    <div class="field"><label for="headcountCode">编制编码</label><input class="input mono" id="headcountCode" disabled placeholder="自动生成" /></div>
+    <div class="field"><span class="field-label required" id="headcountStoreLabel">关联门店</span><div class="store-picker" id="headcountStorePicker"><input id="headcountStore" type="hidden" /><button class="select store-picker-trigger" id="headcountStoreTrigger" type="button" aria-labelledby="headcountStoreLabel headcountStoreText" aria-haspopup="listbox" aria-expanded="false" aria-controls="headcountStoreOptions"><span id="headcountStoreText">请选择关联门店</span></button><div class="store-picker-dropdown" id="headcountStoreDropdown" hidden><label class="sr-only" for="headcountStoreSearch">搜索门店</label><input class="input" id="headcountStoreSearch" type="search" placeholder="输入门店名称或门店编码" autocomplete="off" /><div class="store-picker-options" id="headcountStoreOptions" role="listbox" aria-labelledby="headcountStoreLabel"></div></div></div></div>
+    <div class="field"><label class="required" for="headcountPosition">编制岗位</label><select class="select" id="headcountPosition"></select></div>
+    <div class="field"><label class="required" for="headcountType">编制类型</label><select class="select" id="headcountType"><option value="formal">正式编制</option><option value="temporary">临时编制</option></select></div>
+    <div class="field temporary-field" hidden><label class="required" for="headcountStart">开始时间</label><input class="input" id="headcountStart" type="datetime-local" step="1" /></div>
+    <div class="field temporary-field" hidden><label class="required" for="headcountEnd">结束时间</label><input class="input" id="headcountEnd" type="datetime-local" step="1" /></div>
+    <div class="field"><label for="headcountPlan">计划数量</label><input class="input" id="headcountPlan" type="number" step="0.5" disabled /></div>
+    <div class="field full"><label for="headcountRemark">备注</label><textarea class="textarea" id="headcountRemark" maxlength="200" placeholder="请输入编制说明"></textarea></div>
+  </div></div><footer class="dialog-footer"><button class="button" type="button" data-close="headcountDialog">取消</button><button class="button primary" type="submit">保存</button></footer></form></dialog>
+
+  <dialog id="detailDialog" class="wide" aria-labelledby="detailTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="detailTitle">编制详情</h2><button class="icon-button" type="button" data-close="detailDialog" aria-label="关闭编制详情">✕</button></header><div class="dialog-body" id="detailBody"></div><footer class="dialog-footer" id="detailFooter"></footer></div></dialog>
+  <dialog id="peopleDialog" class="wide" aria-labelledby="peopleTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="peopleTitle">编制占用明细</h2><button class="icon-button" type="button" data-close="peopleDialog" aria-label="关闭占用明细">✕</button></header><div class="dialog-body" id="peopleBody"></div><footer class="dialog-footer"><button class="button" type="button" data-close="peopleDialog">关闭</button></footer></div></dialog>
+  <dialog id="recordLogsDialog" class="wide" aria-labelledby="recordLogsTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="recordLogsTitle">编制变更日志</h2><button class="icon-button" type="button" data-close="recordLogsDialog" aria-label="关闭编制日志">✕</button></header><div class="dialog-body"><ul class="timeline" id="recordLogsBody"></ul></div><footer class="dialog-footer"><button class="button" type="button" data-close="recordLogsDialog">关闭</button></footer></div></dialog>
+  <dialog id="logsDialog" class="wide" aria-labelledby="logsTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="logsTitle">编制操作日志</h2><button class="icon-button" type="button" data-close="logsDialog" aria-label="关闭日志">✕</button></header><div class="dialog-body"><table class="log-list"><thead><tr><th>时间</th><th>操作人</th><th>操作</th><th>编制编码</th><th>说明</th></tr></thead><tbody id="logsBody"></tbody></table></div><footer class="dialog-footer"><button class="button" type="button" data-close="logsDialog">关闭</button></footer></div></dialog>
+  <dialog id="confirmDialog" class="narrow" aria-labelledby="confirmTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="confirmTitle">确认停用编制？</h2><button class="icon-button" type="button" data-close="confirmDialog" aria-label="关闭确认">✕</button></header><div class="dialog-body" id="confirmBody"></div><footer class="dialog-footer"><button class="button" type="button" data-close="confirmDialog">取消</button><button class="button danger" id="confirmStopButton" type="button">确认停用</button></footer></div></dialog>
+  <dialog id="importDialog" class="wide" aria-labelledby="importTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="importTitle">导入新增编制</h2><button class="icon-button" type="button" data-close="importDialog" aria-label="关闭导入">✕</button></header><div class="dialog-body"><div class="impact-box" id="importDescription"></div><ol class="import-steps mt-14"><li>正式、临时编制都支持导入。</li><li>临时编制必须填写精确到时分秒的开始、结束时间。</li><li id="importKeyRule">导入新增不填写编制编码，由系统生成。</li></ol><div class="upload-box"><p>原型使用示例文件演示校验结果</p><div class="upload-actions"><button class="button" id="downloadTemplateButton" type="button">下载模板</button><button class="button" id="loadExampleButton" type="button">加载示例文件</button></div></div><div id="importPreview"></div></div><footer class="dialog-footer"><button class="button" type="button" data-close="importDialog">取消</button><button class="button primary" id="confirmImportButton" type="button" disabled>确认导入</button></footer></div></dialog>
+
+  <script src="./prototype-common.js"></script>
+  <script>
+    "use strict";
+    const { byId, escapeHTML, showToast, openDialog, closeDialog } = window.PrototypeUI;
+    const organizations = [
+      { id: 1, name: "九木杂物社", parentId: null, type: "company", status: "active" }, { id: 2, name: "营运一部", parentId: 1, type: "zone", status: "active" }, { id: 3, name: "上海大区", parentId: 2, type: "area", status: "active" }, { id: 4, name: "上海八区", parentId: 3, type: "region", status: "active" },
+      { id: 5, name: "正大广场店", storeCode: "MG0001", parentId: 4, type: "store", status: "active" }, { id: 6, name: "拉斐尔云廊店", storeCode: "MG0002", parentId: 4, type: "store", status: "active" }, { id: 7, name: "上海七区", parentId: 3, type: "region", status: "active" }, { id: 8, name: "静安大悦城店", storeCode: "MG0004", parentId: 7, type: "store", status: "active" },
+      { id: 9, name: "南京新街口店", storeCode: "MG0003", parentId: 4, type: "store", status: "pending" }
+    ];
+    const positions = [
+      { id: 1, name: "高级店长", coefficient: 1, active: true }, { id: 2, name: "店长", coefficient: 1, active: true }, { id: 3, name: "店助", coefficient: 1, active: true }, { id: 4, name: "高级导购", coefficient: 1, active: true }, { id: 5, name: "导购", coefficient: 1, active: true }, { id: 6, name: "兼职", coefficient: 0.5, active: true }, { id: 7, name: "实习生", coefficient: 0.5, active: true }, { id: 8, name: "管培生", coefficient: 1, active: false }
+    ];
+    const peopleByHeadcount = {
+      1: [{ name: "王芳", employeeNo: "JM0231", position: "店长", coefficient: 1 }],
+      3: [{ name: "李倩", employeeNo: "JM0348", position: "导购", coefficient: 1 }],
+      4: [{ name: "赵敏", employeeNo: "JM0412", position: "兼职", coefficient: 0.5 }, { name: "周晓", employeeNo: "JM0521", position: "实习生", coefficient: 0.5 }],
+      6: [{ name: "孙悦", employeeNo: "JM0618", position: "兼职", coefficient: 0.5 }]
+    };
+    let headcounts = [
+      { id: 1, code: "HC00000001", storeId: 5, positionId: 2, type: "formal", start: "", end: "", plan: 1, status: "active", remark: "门店店长正式编制" },
+      { id: 2, code: "HC00000002", storeId: 5, positionId: 3, type: "formal", start: "", end: "", plan: 1, status: "active", remark: "店助正式编制" },
+      { id: 3, code: "HC00000003", storeId: 5, positionId: 5, type: "formal", start: "", end: "", plan: 1, status: "active", remark: "导购正式编制" },
+      { id: 4, code: "HC00000004", storeId: 5, positionId: 4, type: "formal", start: "", end: "", plan: 1, status: "active", remark: "两名0.5人员共同占用" },
+      { id: 5, code: "HC00000005", storeId: 6, positionId: 5, type: "temporary", start: "2026-10-01T00:00:00", end: "2026-12-31T23:59:59", plan: 1, status: "pending", remark: "国庆至年末临时编制" },
+      { id: 6, code: "HC00000006", storeId: 6, positionId: 5, type: "temporary", start: "2026-07-01T00:00:00", end: "2026-08-31T23:59:59", plan: 0, status: "active", remark: "已到期，仍有关联人员" },
+      { id: 7, code: "HC00000007", storeId: 8, positionId: 2, type: "formal", start: "", end: "", plan: 1, status: "stopped", remark: "历史停用编制" },
+      { id: 8, code: "HC00000008", storeId: 8, positionId: 6, type: "temporary", start: "2026-06-01T00:00:00", end: "2026-08-15T23:59:59", plan: 0, status: "expired", remark: "到期且无人占用" }
+    ];
+    let recordLogs = {
+      1: [{ time: "2026-08-12 10:30:00", title: "人员占用", note: "王芳（JM0231）占用1" }, { time: "2026-07-01 09:00:00", title: "新增编制", note: "系统生成HC00000001" }],
+      4: [{ time: "2026-09-01 11:15:00", title: "人员占用", note: "周晓（JM0521）占用0.5，实际数量达到1" }, { time: "2026-08-18 13:20:00", title: "人员占用", note: "赵敏（JM0412）占用0.5" }],
+      6: [{ time: "2026-09-01 00:00:00", title: "临时编制到期", note: "计划数量调整为0；仍有关联人员，保持生效中并标记超编待处理" }]
+    };
+    let logs = [
+      { time: "2026-09-01 00:00:00", operator: "系统", action: "临时编制到期", code: "HC00000006", note: "计划数量改为0，存在0.5实际占用" },
+      { time: "2026-08-20 14:35:00", operator: "张明", action: "编辑编制", code: "HC00000005", note: "结束时间延长至2026-12-31 23:59:59" }
+    ];
+    const state = { selectedOrgId: null, expanded: new Set([1, 2, 3, 4, 7]), editingId: null, stoppingId: null, importMode: "create", importReady: false, filters: { code: "", storeCode: "", position: "", type: "", lifecycle: "", occupancy: "" } };
+
+    function org(id) { return organizations.find(item => item.id === id); }
+    function position(id) { return positions.find(item => item.id === id); }
+    function organizationPath(item) { const parts = []; let current = item; while (current) { parts.unshift(`${current.name}${current.type === "store" && current.storeCode ? `（${current.storeCode}）` : ""}`); current = org(current.parentId); } return parts.join(" / "); }
+    function people(id) { return peopleByHeadcount[id] || []; }
+    function actual(item) { return people(item.id).reduce((sum, person) => sum + person.coefficient, 0); }
+    function occupancy(item) { if (["expired", "stopped"].includes(item.status)) return "none"; const value = actual(item); if (value === 0) return "empty"; if (value < item.plan) return "partial"; if (value === item.plan) return "full"; return "over"; }
+    function occupancyTag(item) { const meta = { empty: ["空编", "info"], partial: ["部分占用", "warning"], full: ["满编", "success"], over: ["超编待处理", "danger"], none: ["—", "info"] }[occupancy(item)]; return meta[0] === "—" ? "—" : `<span class="tag ${meta[1]}">${meta[0]}</span>`; }
+    function lifecycleTag(status) { const meta = { pending: ["待生效", "warning"], active: ["生效中", "success"], expired: ["已失效", "info"], stopped: ["已停用", "info"] }[status]; return `<span class="tag ${meta[1]}">${meta[0]}</span>`; }
+    function typeText(type) { return type === "formal" ? "正式编制" : "临时编制"; }
+    function periodText(item) { return item.type === "formal" ? "长期有效" : `${item.start.replace("T", " ")} 至 ${item.end.replace("T", " ")}`; }
+    function periodListText(item) { return item.type === "formal" ? "长期有效" : `${item.start.slice(0, 10)} 至 ${item.end.slice(0, 10)}`; }
+    function scopeIds() { if (state.selectedOrgId === null) return organizations.map(item => item.id); const ids = [state.selectedOrgId]; for (const item of organizations) if (ids.includes(item.parentId)) ids.push(item.id); return ids; }
+    function rows() { const ids = scopeIds(), code = state.filters.code.toUpperCase(), storeCode = state.filters.storeCode.toLowerCase(); return headcounts.filter(item => ids.includes(item.storeId) && (!code || item.code.includes(code)) && (!storeCode || (org(item.storeId)?.storeCode || "").toLowerCase().includes(storeCode)) && (!state.filters.position || item.positionId === Number(state.filters.position)) && (!state.filters.type || item.type === state.filters.type) && (!state.filters.lifecycle || item.status === state.filters.lifecycle) && (!state.filters.occupancy || occupancy(item) === state.filters.occupancy)); }
+    function addLog(action, code, note) { const time = new Date().toLocaleString("zh-CN", { hour12: false }).replaceAll("/", "-"); logs.unshift({ time, operator: "张明", action, code, note }); return time; }
+    function addRecordLog(id, title, note, time = null) { recordLogs[id] ||= []; recordLogs[id].unshift({ time: time || new Date().toLocaleString("zh-CN", { hour12: false }).replaceAll("/", "-"), title, note }); }
+
+    function renderTree() {
+      const treeOrganizations = organizations.filter(item => item.status === "active"), keyword = byId("treeSearch").value.trim().toLowerCase();
+      function treeChildren(id) { return treeOrganizations.filter(item => item.parentId === id); }
+      function visible(item) { if (!keyword) return true; if (`${item.name} ${item.storeCode || ""}`.toLowerCase().includes(keyword)) return true; return treeChildren(item.id).some(visible); }
+      function node(item, depth) { if (!visible(item)) return ""; const children = treeChildren(item.id), expanded = state.expanded.has(item.id) || Boolean(keyword); return `<div class="tree-row" style="--depth:${depth}"><button class="tree-toggle ${children.length ? "" : "placeholder"}" type="button" data-tree-toggle="${item.id}" aria-expanded="${expanded}">▶</button><button class="tree-label ${state.selectedOrgId === item.id ? "active" : ""}" type="button" data-tree-select="${item.id}"><span class="status-slot"></span><span class="tree-name" title="${escapeHTML(item.name)}">${escapeHTML(item.name)}</span></button></div>${expanded ? children.map(child => node(child, depth + 1)).join("") : ""}`; }
+      byId("treeRoot").innerHTML = `<div class="tree-row" style="--depth:0"><button class="tree-toggle placeholder" tabindex="-1">▶</button><button class="tree-label ${state.selectedOrgId === null ? "active" : ""}" type="button" data-tree-select=""><span class="status-slot"></span><span class="tree-name">全部组织</span></button></div>${treeOrganizations.filter(item => item.parentId === null).map(item => node(item, 0)).join("")}`;
+    }
+    function renderTable() {
+      const result = rows(), activeRows = result.filter(item => item.status === "active");
+      byId("activeStat").textContent = activeRows.length; byId("plannedStat").textContent = activeRows.reduce((sum, item) => sum + item.plan, 0); byId("actualStat").textContent = activeRows.reduce((sum, item) => sum + actual(item), 0); byId("overStat").textContent = activeRows.filter(item => occupancy(item) === "over").length;
+      byId("selectedScope").textContent = state.selectedOrgId ? `${org(state.selectedOrgId)?.name}及下级` : "全部组织"; byId("totalCount").textContent = result.length; byId("paginationInfo").textContent = result.length ? `显示1–${result.length}条，共${result.length}条` : "共0条";
+      byId("tableBody").innerHTML = result.length ? result.map(item => `<tr><td class="mono"><button class="cell-link mono" type="button" data-action="detail" data-id="${item.id}">${item.code}</button></td><td title="${escapeHTML(org(item.storeId)?.name)}">${escapeHTML(org(item.storeId)?.name)}</td><td class="mono">${escapeHTML(org(item.storeId)?.storeCode || "—")}</td><td>${escapeHTML(position(item.positionId)?.name)}</td><td>${typeText(item.type)}</td><td>${escapeHTML(periodListText(item))}</td><td class="number">${item.plan}</td><td class="number">${actual(item)}</td><td>${lifecycleTag(item.status)}</td><td>${occupancyTag(item)}</td><td><div class="row-actions"><button type="button" data-action="detail" data-id="${item.id}">详情</button><button type="button" data-action="edit" data-id="${item.id}" ${["expired", "stopped"].includes(item.status) ? "disabled" : ""}>编辑</button><button type="button" data-action="people" data-id="${item.id}">占用明细</button><button type="button" data-action="stop" data-id="${item.id}" ${["expired", "stopped"].includes(item.status) ? "disabled" : ""}>停用</button></div></td></tr>`).join("") : `<tr><td colspan="11"><div class="empty-state">当前范围没有符合条件的编制。</div></td></tr>`;
+    }
+    function renderAll() { renderTree(); renderTable(); }
+    function fillOptions() {
+      const currentPosition = Number(byId("headcountPosition").value || 0);
+      byId("filterPosition").innerHTML = `<option value="">全部岗位</option>${positions.map(item => `<option value="${item.id}">${escapeHTML(item.name)}</option>`).join("")}`;
+      byId("headcountPosition").innerHTML = positions.map(item => `<option value="${item.id}" ${!item.active && item.id !== currentPosition ? "disabled" : ""}>${escapeHTML(item.name)}${item.active ? "" : "（已停用）"}</option>`).join("");
+    }
+    function renderStorePicker(keyword = "") {
+      const normalized = keyword.trim().toLowerCase(), selectedId = Number(byId("headcountStore").value);
+      const stores = organizations.filter(item => item.type === "store").filter(item => !normalized || `${organizationPath(item)} ${item.storeCode || ""}`.toLowerCase().includes(normalized));
+      byId("headcountStoreOptions").innerHTML = stores.length ? stores.map(item => `<button class="store-picker-option ${item.id === selectedId ? "selected" : ""}" type="button" role="option" aria-selected="${item.id === selectedId}" data-store-value="${item.id}">${escapeHTML(organizationPath(item))}</button>`).join("") : `<div class="store-picker-empty">没有匹配的门店</div>`;
+    }
+    function closeStorePicker() { byId("headcountStoreDropdown").hidden = true; byId("headcountStoreTrigger").setAttribute("aria-expanded", "false"); }
+    function setStorePickerValue(value) { const item = org(Number(value)); byId("headcountStore").value = item?.type === "store" ? String(item.id) : ""; byId("headcountStoreText").textContent = item?.type === "store" ? item.name : "请选择关联门店"; renderStorePicker(byId("headcountStoreSearch").value); }
+    function configureStorePicker(value, disabled) { byId("headcountStoreTrigger").disabled = disabled; byId("headcountStoreSearch").disabled = disabled; byId("headcountStoreSearch").value = ""; setStorePickerValue(value); closeStorePicker(); }
+    function updatePlanFromPosition() { const item = headcounts.find(row => row.id === state.editingId), selectedPosition = position(Number(byId("headcountPosition").value)); byId("headcountPlan").value = String(item && actual(item) > 0 ? item.plan : selectedPosition?.coefficient ?? ""); }
+    function toggleTemporaryFields() { const temporary = byId("headcountType").value === "temporary"; document.querySelectorAll(".temporary-field").forEach(field => { field.hidden = !temporary; }); }
+    function openForm(id = null) {
+      state.editingId = id; const item = headcounts.find(row => row.id === id), occupied = item ? actual(item) > 0 : false;
+      byId("headcountTitle").textContent = item ? "编辑编制" : "新增编制"; byId("headcountCode").value = item?.code || ""; configureStorePicker(String(item?.storeId || 5), occupied); byId("headcountPosition").value = String(item?.positionId || 2); byId("headcountType").value = item?.type || "formal"; byId("headcountStart").value = item?.start || ""; byId("headcountEnd").value = item?.end || ""; byId("headcountRemark").value = item?.remark || "";
+      byId("headcountType").disabled = Boolean(item); byId("headcountPosition").disabled = occupied; byId("headcountStart").disabled = Boolean(item && item.status === "active");
+      updatePlanFromPosition(); toggleTemporaryFields(); byId("formErrors").hidden = true; openDialog("headcountDialog");
+    }
+    function openPeople(id) {
+      const item = headcounts.find(row => row.id === id); if (!item) return; const list = people(id);
+      byId("peopleTitle").textContent = `${item.code} — 占用明细`; byId("peopleBody").innerHTML = `<div class="impact-box">计划数量：${item.plan}；实际数量：${actual(item)}；占用状态：${occupancyTag(item)}。人员岗位与编制岗位相互独立，实际数量取人员岗位定义的编制占用数量。</div><table class="person-table mt-14"><thead><tr><th>员工</th><th>工号</th><th>人员岗位</th><th>编制占用数量</th></tr></thead><tbody>${list.length ? list.map(person => `<tr><td>${escapeHTML(person.name)}</td><td>${escapeHTML(person.employeeNo)}</td><td>${escapeHTML(person.position)}</td><td>${person.coefficient}</td></tr>`).join("") : `<tr><td colspan="4">暂无关联人员</td></tr>`}</tbody></table><p class="field-help">编制管理不提供手工关联或解绑；具体入口随员工管理和人员流程后续确认。</p>`; openDialog("peopleDialog");
+    }
+    function openRecordLogs(id) { const item = headcounts.find(row => row.id === id); if (!item) return; byId("recordLogsTitle").textContent = `${item.code} — 编制变更日志`; const items = recordLogs[id] || []; byId("recordLogsBody").innerHTML = items.length ? items.map(log => `<li><div class="timeline-time">${escapeHTML(log.time)}</div><div class="timeline-title">${escapeHTML(log.title)}</div><div class="timeline-note">${escapeHTML(log.note)}</div></li>`).join("") : `<li><div class="timeline-title">暂无变更记录</div></li>`; openDialog("recordLogsDialog"); }
+    function openDetail(id) {
+      const item = headcounts.find(row => row.id === id); if (!item) return;
+      byId("detailTitle").textContent = `${item.code} — 编制详情`; byId("detailBody").innerHTML = `<section class="dialog-section"><h3 class="section-title">编制信息</h3><dl class="description-grid"><div class="description-item"><dt>编制编码</dt><dd class="mono">${item.code}</dd></div><div class="description-item"><dt>关联门店</dt><dd>${escapeHTML(org(item.storeId)?.name)}</dd></div><div class="description-item"><dt>编制岗位</dt><dd>${escapeHTML(position(item.positionId)?.name)}</dd></div><div class="description-item"><dt>编制类型</dt><dd>${typeText(item.type)}</dd></div><div class="description-item"><dt>有效期</dt><dd>${escapeHTML(periodText(item))}</dd></div><div class="description-item"><dt>生命周期</dt><dd>${lifecycleTag(item.status)}</dd></div><div class="description-item"><dt>计划数量</dt><dd>${item.plan}</dd></div><div class="description-item"><dt>实际数量</dt><dd>${actual(item)}</dd></div><div class="description-item"><dt>占用状态</dt><dd>${occupancyTag(item)}</dd></div><div class="description-item"><dt>备注</dt><dd>${escapeHTML(item.remark || "—")}</dd></div></dl></section><section class="dialog-section"><h3 class="section-title">规则说明</h3><div class="impact-box">计划数量由所选编制岗位的编制占用数量自动带入。临时编制到期且无人占用时，计划数量改为0并自动失效；仍有人占用时计划数量改为0、生命周期保持生效中，并标记“超编待处理”。人员全部释放后自动失效。</div></section>`;
+      byId("detailFooter").innerHTML = `<button class="button" type="button" data-detail-people="${item.id}">查看占用</button><button class="button" type="button" data-detail-logs="${item.id}">变更日志</button>${!["expired", "stopped"].includes(item.status) ? `<button class="button primary" type="button" data-detail-edit="${item.id}">编辑</button>` : ""}<button class="button" type="button" data-close="detailDialog">关闭</button>`; openDialog("detailDialog");
+    }
+    function renderLogs() { byId("logsBody").innerHTML = logs.map(item => `<tr><td>${escapeHTML(item.time)}</td><td>${escapeHTML(item.operator)}</td><td>${escapeHTML(item.action)}</td><td class="mono">${escapeHTML(item.code)}</td><td>${escapeHTML(item.note)}</td></tr>`).join(""); }
+    function download(filename, content) { const url = URL.createObjectURL(new Blob(["\ufeff" + content], { type: "text/csv;charset=utf-8" })); const link = document.createElement("a"); link.href = url; link.download = filename; link.click(); URL.revokeObjectURL(url); }
+    function nextCode() { const next = Math.max(...headcounts.map(item => Number(item.code.slice(2)))) + 1; return `HC${String(next).padStart(8, "0")}`; }
+
+    byId("treeRoot").addEventListener("click", event => { const toggle = event.target.closest("[data-tree-toggle]"), select = event.target.closest("[data-tree-select]"); if (toggle) { const id = Number(toggle.dataset.treeToggle); state.expanded.has(id) ? state.expanded.delete(id) : state.expanded.add(id); renderTree(); } if (select) { state.selectedOrgId = select.dataset.treeSelect ? Number(select.dataset.treeSelect) : null; renderAll(); } });
+    byId("treeSearch").addEventListener("input", renderTree);
+    byId("filterForm").addEventListener("submit", event => { event.preventDefault(); state.filters = { code: byId("filterCode").value.trim(), storeCode: byId("filterStoreCode").value.trim(), position: byId("filterPosition").value, type: byId("filterType").value, lifecycle: byId("filterLifecycle").value, occupancy: byId("filterOccupancy").value }; renderTable(); });
+    byId("filterForm").addEventListener("reset", () => setTimeout(() => { state.filters = { code: "", storeCode: "", position: "", type: "", lifecycle: "", occupancy: "" }; state.selectedOrgId = null; renderAll(); }, 0));
+    byId("addButton").addEventListener("click", () => openForm()); byId("headcountType").addEventListener("change", toggleTemporaryFields); byId("headcountPosition").addEventListener("change", updatePlanFromPosition);
+    byId("headcountStoreTrigger").addEventListener("click", () => { const dropdown = byId("headcountStoreDropdown"), opening = dropdown.hidden; dropdown.hidden = !opening; byId("headcountStoreTrigger").setAttribute("aria-expanded", String(opening)); if (opening) { byId("headcountStoreSearch").value = ""; renderStorePicker(); byId("headcountStoreSearch").focus(); } });
+    byId("headcountStoreSearch").addEventListener("input", event => renderStorePicker(event.target.value));
+    byId("headcountStoreOptions").addEventListener("click", event => { const option = event.target.closest("[data-store-value]"); if (!option) return; setStorePickerValue(option.dataset.storeValue); closeStorePicker(); byId("headcountStoreTrigger").focus(); });
+    document.addEventListener("click", event => { if (!byId("headcountStorePicker").contains(event.target)) closeStorePicker(); });
+    byId("headcountStorePicker").addEventListener("keydown", event => { if (event.key === "Escape") { closeStorePicker(); byId("headcountStoreTrigger").focus(); } });
+    byId("tableBody").addEventListener("click", event => { const button = event.target.closest("[data-action]"); if (!button || button.disabled) return; const id = Number(button.dataset.id), item = headcounts.find(row => row.id === id); if (!item) return; if (button.dataset.action === "detail") openDetail(id); if (button.dataset.action === "edit") openForm(id); if (button.dataset.action === "people") openPeople(id); if (button.dataset.action === "stop") { if (actual(item) > 0) return showToast("该编制仍有关联人员，不能停用", "error"); state.stoppingId = id; byId("confirmBody").innerHTML = `<div class="warning-box">停用后不再允许新增人员占用，但会保留编制编码、历史记录和变更日志。确认停用 <strong>${item.code}</strong>？</div>`; openDialog("confirmDialog"); } });
+    byId("detailFooter").addEventListener("click", event => { const edit = event.target.closest("[data-detail-edit]"), peopleButton = event.target.closest("[data-detail-people]"), logsButton = event.target.closest("[data-detail-logs]"); if (edit) { closeDialog("detailDialog"); openForm(Number(edit.dataset.detailEdit)); } if (peopleButton) { closeDialog("detailDialog"); openPeople(Number(peopleButton.dataset.detailPeople)); } if (logsButton) { closeDialog("detailDialog"); openRecordLogs(Number(logsButton.dataset.detailLogs)); } });
+    byId("confirmStopButton").addEventListener("click", () => { const item = headcounts.find(row => row.id === state.stoppingId); if (!item) return; item.status = "stopped"; const time = addLog("停用编制", item.code, "管理员手工停用"); addRecordLog(item.id, "停用编制", "管理员手工停用", time); closeDialog("confirmDialog"); renderAll(); showToast("编制已停用"); });
+    byId("headcountForm").addEventListener("submit", event => {
+      event.preventDefault(); const existing = headcounts.find(item => item.id === state.editingId), storeId = Number(byId("headcountStore").value), positionId = Number(byId("headcountPosition").value), plan = Number(byId("headcountPlan").value), type = byId("headcountType").value, start = byId("headcountStart").value, end = byId("headcountEnd").value, remark = byId("headcountRemark").value.trim(), errors = [];
+      if (!storeId) errors.push("请选择关联门店"); if (!positionId) errors.push("请选择编制岗位"); if (type === "temporary" && !start) errors.push("请选择开始时间"); if (type === "temporary" && !end) errors.push("请选择结束时间"); if (type === "temporary" && start && end && end <= start) errors.push("结束时间必须晚于开始时间"); if (existing && actual(existing) > 0 && existing.type === "temporary" && end < existing.end) errors.push("已有人员占用时只能延长结束时间");
+      byId("formErrors").innerHTML = errors.map(error => `<div>• ${escapeHTML(error)}</div>`).join(""); byId("formErrors").hidden = !errors.length; if (errors.length) return;
+      if (existing) { const changes = []; if (existing.storeId !== storeId) changes.push(`门店：${org(existing.storeId)?.name} → ${org(storeId)?.name}`); if (existing.positionId !== positionId) changes.push(`岗位：${position(existing.positionId)?.name} → ${position(positionId)?.name}`); if (existing.plan !== plan) changes.push(`计划数量：${existing.plan} → ${plan}`); if (existing.end !== end && type === "temporary") changes.push(`结束时间：${existing.end.replace("T", " ")} → ${end.replace("T", " ")}`); Object.assign(existing, { storeId, positionId, plan, start, end, remark }); const time = addLog("编辑编制", existing.code, changes.join("；") || "更新备注"); addRecordLog(existing.id, "编辑编制", changes.join("；") || "更新备注", time); showToast("编制已保存"); }
+      else { const id = Math.max(...headcounts.map(item => item.id)) + 1, code = nextCode(), now = new Date(), status = type === "temporary" && new Date(start) > now ? "pending" : "active", item = { id, code, storeId, positionId, type, start: type === "temporary" ? start : "", end: type === "temporary" ? end : "", plan, status, remark }; headcounts.unshift(item); const time = addLog("新增编制", code, `${org(storeId)?.name} · ${position(positionId)?.name}`); addRecordLog(id, "新增编制", `系统生成${code}`, time); showToast(`编制已新增：${code}`); }
+      closeDialog("headcountDialog"); renderAll();
+    });
+    byId("logsButton").addEventListener("click", () => { renderLogs(); openDialog("logsDialog"); });
+    function openImport(mode) { state.importMode = mode; state.importReady = false; byId("confirmImportButton").disabled = true; byId("importPreview").innerHTML = ""; byId("importTitle").textContent = mode === "create" ? "导入新增编制" : "导入更新编制"; byId("importDescription").textContent = mode === "create" ? "文件中的每一行新增一条独立编制，编码由系统自动生成。" : "必须填写编制编码，以HC+8位流水号作为唯一匹配依据；文件中未出现的编制不受影响。"; byId("importKeyRule").textContent = mode === "create" ? "导入新增不填写编制编码，由系统生成。" : "导入更新必须填写编制编码，且不允许修改编制类型。"; openDialog("importDialog"); }
+    byId("importCreateButton").addEventListener("click", () => openImport("create")); byId("importUpdateButton").addEventListener("click", () => openImport("update"));
+    byId("loadExampleButton").addEventListener("click", () => { state.importReady = true; byId("confirmImportButton").disabled = false; byId("importPreview").innerHTML = `<div class="warning-box mt-16">${state.importMode === "create" ? "编制新增示例.xlsx" : "编制更新示例.xlsx"}：共5条，通过4条，失败1条。${state.importMode === "create" ? "失败原因：临时编制结束时间早于开始时间。" : "失败原因：编制编码不存在。"}</div>`; });
+    byId("confirmImportButton").addEventListener("click", () => { if (!state.importReady) return; closeDialog("importDialog"); addLog(state.importMode === "create" ? "导入新增" : "导入更新", "批量", "成功4条，失败1条"); showToast("编制导入完成：成功4条，失败1条"); });
+    byId("downloadTemplateButton").addEventListener("click", () => { const header = state.importMode === "create" ? "组织编码,岗位名称,编制类型,开始时间,结束时间,备注\n" : "编制编码,组织编码,岗位名称,开始时间,结束时间,备注\n"; download(state.importMode === "create" ? "编制导入新增模板.csv" : "编制导入更新模板.csv", header); });
+    byId("exportButton").addEventListener("click", () => { const result = rows(); download("编制明细.csv", ["编制编码,门店,门店编码,编制岗位,编制类型,开始时间,结束时间,计划数量,实际数量,生命周期,占用状态,备注", ...result.map(item => `${item.code},${org(item.storeId)?.name},${org(item.storeId)?.storeCode || ""},${position(item.positionId)?.name},${typeText(item.type)},${item.start},${item.end},${item.plan},${actual(item)},${item.status},${occupancy(item)},${item.remark}`)].join("\n")); showToast(`已导出${result.length}条编制`); });
+
+    fillOptions(); renderAll();
+  </script>
+</body>
+</html>
