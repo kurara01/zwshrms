@@ -18,7 +18,7 @@
   <a class="skip-link" href="#mainContent">跳到主内容</a>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar" aria-label="主导航">
-      <div class="brand"><div class="brand-mark" aria-hidden="true">九</div><div class="brand-copy"><div class="brand-name">杂物社 · 人事系统</div><div class="brand-version">业务评审原型 v1.0</div></div></div>
+      <div class="brand"><div class="brand-mark" aria-hidden="true">九</div><div class="brand-copy"><div class="brand-name">杂物社 · 人事系统</div></div></div>
       <nav class="nav-scroll">
         <section class="nav-group"><button class="nav-group-trigger" type="button" aria-expanded="true"><span class="nav-arrow" aria-hidden="true">▶</span><span class="nav-label">组织人事</span></button><div class="nav-items"><a class="nav-item" href="./组织基础信息表.html">组织架构</a><a class="nav-item" href="./岗位管理.html">岗位管理</a><a class="nav-item" href="./编制管理.html">编制管理</a></div></section>
         <section class="nav-group"><button class="nav-group-trigger" type="button" aria-expanded="true"><span class="nav-arrow" aria-hidden="true">▶</span><span class="nav-label">考勤管理</span></button><div class="nav-items"><a class="nav-item active" href="./标准工时维护.html" aria-current="page">标准工时维护</a></div></section>
@@ -31,13 +31,12 @@
       <main class="page-scroll" id="mainContent" tabindex="-1">
         <header class="page-heading"><div><div class="page-title-row"><h1>标准工时维护</h1></div><p class="page-description">由HR维护全公司统一的月标准工时</p></div><div class="page-actions"><button class="button" id="logsButton" type="button">操作日志</button></div></header>
         <form class="filter-card card" id="filterForm"><div class="filter-grid">
-          <div class="field"><label for="filterYear">年份</label><select class="select" id="filterYear"><option value="">全部年份</option><option value="2026">2026年</option><option value="2025">2025年</option></select></div>
+          <div class="field"><label for="filterYear">年份</label><select class="select" id="filterYear"><option value="">全部年份</option></select></div>
           <div class="filter-actions"><button class="button primary" type="submit">查询</button><button class="button" type="reset">重置</button></div>
         </div></form>
 
         <section class="table-card card mt-14">
           <header class="table-toolbar"><div class="toolbar-actions"><button class="button primary" id="addButton" type="button">新增标准工时</button></div><div class="toolbar-summary">共 <strong id="totalCount">0</strong> 个月</div></header>
-          <div class="table-note">月份创建后不可修改；如需调整工时数，使用“编辑”并记录修改前后值。</div>
           <div class="table-scroll"><table class="data-table hours-table"><caption class="sr-only">标准工时列表</caption><thead><tr><th class="month-col">月份</th><th class="hours-col">标准工时（小时）</th><th class="time-col">最后更新时间</th><th class="operator-col">最后操作人</th><th class="action-col">操作</th></tr></thead><tbody id="tableBody"></tbody></table></div>
           <footer class="pagination"><span id="paginationInfo"></span><div><button class="page-button active" type="button" aria-current="page">1</button></div></footer>
         </section>
@@ -51,28 +50,21 @@
   <dialog id="logsDialog" class="wide" aria-labelledby="logsTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="logsTitle">标准工时操作日志</h2><button class="icon-button" type="button" data-close="logsDialog" aria-label="关闭日志">✕</button></header><div class="dialog-body"><table class="log-list"><thead><tr><th>时间</th><th>操作人</th><th>月份</th><th>操作</th><th>变更内容</th></tr></thead><tbody id="logsBody"></tbody></table></div><footer class="dialog-footer"><button class="button" type="button" data-close="logsDialog">关闭</button></footer></div></dialog>
 
   <script src="./prototype-common.js"></script>
+  <script src="./prototype-data.js"></script>
   <script>
     "use strict";
     const { byId, escapeHTML, showToast, openDialog, closeDialog } = window.PrototypeUI;
-    let records = [
-      { id: 1, month: "2026-12", hours: 176, updatedAt: "2026-09-02 15:20:00", operator: "张明" },
-      { id: 2, month: "2026-11", hours: 176, updatedAt: "2026-09-02 15:18:00", operator: "张明" },
-      { id: 3, month: "2026-10", hours: 168, updatedAt: "2026-09-02 15:16:00", operator: "张明" },
-      { id: 4, month: "2026-09", hours: 176, updatedAt: "2026-08-20 10:30:00", operator: "周萌" },
-      { id: 5, month: "2026-08", hours: 176, updatedAt: "2026-07-22 09:12:00", operator: "周萌" },
-      { id: 6, month: "2026-02", hours: 160.5, updatedAt: "2026-01-18 14:05:00", operator: "陈丽" }
-    ];
-    let logs = [
-      { time: "2026-09-02 15:20:00", operator: "张明", month: "2026-12", action: "新增", note: "标准工时176小时" },
-      { time: "2026-08-20 10:30:00", operator: "周萌", month: "2026-09", action: "编辑", note: "标准工时：175.5小时 → 176小时" }
-    ];
+    const Shared = window.PrototypeData;
+    const records = Shared.data.standardHours;
+    const logs = Shared.data.standardHoursLogs;
     const state = { editingId: null, pending: null, filters: { year: "" } };
-    function nowText() { return new Date().toLocaleString("zh-CN", { hour12: false }).replaceAll("/", "-"); }
+    function nowText() { return Shared.localDateTime(); }
     function monthText(value) { const [year, month] = value.split("-"); return `${year}年${Number(month)}月`; }
     function rows() { return [...records].sort((a, b) => b.month.localeCompare(a.month)).filter(item => !state.filters.year || item.month.startsWith(state.filters.year)); }
-    function render() { const result = rows(); byId("totalCount").textContent = result.length; byId("paginationInfo").textContent = result.length ? `显示1–${result.length}条，共${result.length}条` : "共0条"; byId("tableBody").innerHTML = result.length ? result.map(item => `<tr><td>${monthText(item.month)}</td><td class="number">${item.hours}</td><td>${escapeHTML(item.updatedAt)}</td><td>${escapeHTML(item.operator)}</td><td><div class="row-actions"><button type="button" data-edit="${item.id}">编辑</button></div></td></tr>`).join("") : `<tr><td colspan="5"><div class="empty-state">没有符合条件的标准工时记录。</div></td></tr>`; }
+    function renderYearOptions() { const selected = byId("filterYear").value, years = [...new Set(records.map(item => item.month.slice(0, 4)))].sort((a, b) => b.localeCompare(a)); byId("filterYear").innerHTML = `<option value="">全部年份</option>${years.map(year => `<option value="${year}">${year}年</option>`).join("")}`; byId("filterYear").value = years.includes(selected) ? selected : ""; }
+    function render() { renderYearOptions(); const result = rows(); byId("totalCount").textContent = result.length; byId("paginationInfo").textContent = result.length ? `显示1–${result.length}条，共${result.length}条` : "共0条"; byId("tableBody").innerHTML = result.length ? result.map(item => `<tr><td>${monthText(item.month)}</td><td class="number">${item.hours}</td><td>${escapeHTML(item.updatedAt)}</td><td>${escapeHTML(item.operator)}</td><td><div class="row-actions"><button type="button" data-edit="${item.id}">编辑</button></div></td></tr>`).join("") : `<tr><td colspan="5"><div class="empty-state">没有符合条件的标准工时记录。</div></td></tr>`; }
     function openForm(id = null) { state.editingId = id; const item = records.find(row => row.id === id); byId("hoursTitle").textContent = item ? "编辑标准工时" : "新增标准工时"; byId("hoursMonth").value = item?.month || ""; byId("hoursMonth").disabled = Boolean(item); byId("hoursValue").value = item?.hours ?? ""; byId("formErrors").hidden = true; openDialog("hoursDialog"); }
-    function commit(data) { const item = records.find(row => row.id === state.editingId), time = nowText(); if (item) { const old = item.hours; if (old !== data.hours) { item.hours = data.hours; item.updatedAt = time; item.operator = "张明"; logs.unshift({ time, operator: "张明", month: item.month, action: "编辑", note: `标准工时：${old}小时 → ${data.hours}小时` }); showToast("标准工时已更新"); } else showToast("未检测到字段变更"); } else { records.push({ id: Math.max(...records.map(row => row.id)) + 1, month: data.month, hours: data.hours, updatedAt: time, operator: "张明" }); logs.unshift({ time, operator: "张明", month: data.month, action: "新增", note: `标准工时：${data.hours}小时` }); showToast("标准工时已新增"); } state.pending = null; closeDialog("confirmDialog"); closeDialog("hoursDialog"); render(); }
+    function commit(data) { const item = records.find(row => row.id === state.editingId), time = nowText(); if (item) { const old = item.hours; if (old !== data.hours) { item.hours = data.hours; item.updatedAt = time; item.operator = "张明"; logs.unshift({ time, operator: "张明", month: item.month, action: "编辑", note: `标准工时：${old}小时 → ${data.hours}小时` }); showToast("标准工时已更新"); } else showToast("未检测到字段变更"); } else { records.push({ id: Math.max(...records.map(row => row.id)) + 1, month: data.month, hours: data.hours, updatedAt: time, operator: "张明" }); logs.unshift({ time, operator: "张明", month: data.month, action: "新增", note: `标准工时：未填写 → ${data.hours}小时` }); showToast("标准工时已新增"); } Shared.save(); state.pending = null; closeDialog("confirmDialog"); closeDialog("hoursDialog"); render(); }
     function renderLogs() { byId("logsBody").innerHTML = logs.map(item => `<tr><td>${escapeHTML(item.time)}</td><td>${escapeHTML(item.operator)}</td><td>${monthText(item.month)}</td><td>${escapeHTML(item.action)}</td><td>${escapeHTML(item.note)}</td></tr>`).join(""); }
 
     byId("filterForm").addEventListener("submit", event => { event.preventDefault(); state.filters = { year: byId("filterYear").value }; render(); });

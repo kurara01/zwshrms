@@ -50,7 +50,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .brand-mark { width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; color: #fff; background: var(--brand); border-radius: var(--radius-md); font-weight: 700; }
 .brand-copy { min-width: 0; white-space: nowrap; }
 .brand-name { color: #fff; font-size: 13px; font-weight: 600; }
-.brand-version { margin-top: 2px; color: rgba(255,255,255,.45); font-size: 11px; }
 .sidebar.collapsed .brand { justify-content: center; padding-inline: 8px; }
 .sidebar.collapsed .brand-copy { display: none; }
 .nav-scroll { flex: 1; overflow: auto; padding: 6px 0 16px; scrollbar-width: thin; }
@@ -232,7 +231,6 @@ h1 { margin: 0; color: #1f2329; font-size: 20px; line-height: 30px; }
 .tab.active { color: var(--brand); border-bottom-color: var(--brand); font-weight: 600; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
 .muted { color: var(--text-secondary); }
-.table-note { padding: 10px 14px; color: var(--text-secondary); background: #fafafa; border-bottom: 1px solid var(--border-lighter); font-size: 12px; }
 .status-legend { display: flex; flex-wrap: wrap; gap: 10px 16px; color: var(--text-secondary); font-size: 12px; }
 .status-legend span { display: inline-flex; align-items: center; gap: 5px; }
 .legend-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-placeholder); }

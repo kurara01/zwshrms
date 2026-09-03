@@ -26,7 +26,7 @@
   <a class="skip-link" href="#mainContent">跳到主内容</a>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar" aria-label="主导航">
-      <div class="brand"><div class="brand-mark" aria-hidden="true">九</div><div class="brand-copy"><div class="brand-name">杂物社 · 人事系统</div><div class="brand-version">业务评审原型 v1.2</div></div></div>
+      <div class="brand"><div class="brand-mark" aria-hidden="true">九</div><div class="brand-copy"><div class="brand-name">杂物社 · 人事系统</div></div></div>
       <nav class="nav-scroll">
         <section class="nav-group">
           <button class="nav-group-trigger" type="button" aria-expanded="true"><span class="nav-arrow" aria-hidden="true">▶</span><span class="nav-label">组织人事</span></button>
@@ -63,7 +63,6 @@
 
         <section class="table-card card mt-14">
           <header class="table-toolbar"><div class="toolbar-actions"><button class="button primary" id="addButton" type="button">新增岗位</button><button class="button" id="importButton" type="button">批量导入</button><button class="button" id="exportButton" type="button">导出当前结果</button></div><div class="toolbar-summary">共 <strong id="totalCount">0</strong> 条岗位</div></header>
-          <div class="table-note">已停用岗位仍保留历史关联，但不能在新的人员或编制记录中选择。</div>
           <div class="table-scroll"><table class="data-table position-table"><caption class="sr-only">岗位列表</caption><thead><tr><th class="name-col">岗位名称</th><th class="grade-col">适用职等</th><th class="coefficient-col">编制占用数量</th><th class="status-col">岗位状态</th><th class="remark-col">备注</th><th class="action-col">操作</th></tr></thead><tbody id="tableBody"></tbody></table></div>
           <footer class="pagination"><span id="paginationInfo"></span><div><button class="page-button active" type="button" aria-current="page">1</button></div></footer>
         </section>
@@ -93,34 +92,24 @@
 
   <dialog id="toggleDialog" class="narrow" aria-labelledby="toggleTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="toggleTitle">确认岗位状态变更</h2><button class="icon-button" type="button" data-close="toggleDialog" aria-label="关闭状态确认">✕</button></header><div class="dialog-body" id="toggleBody"></div><footer class="dialog-footer"><button class="button" type="button" data-close="toggleDialog">取消</button><button class="button" id="confirmToggleButton" type="button">确认</button></footer></div></dialog>
 
-  <dialog id="importDialog" class="wide" aria-labelledby="importTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="importTitle">批量导入岗位</h2><button class="icon-button" type="button" data-close="importDialog" aria-label="关闭导入">✕</button></header><div class="dialog-body"><ol class="import-steps"><li>下载模板并填写岗位名称、适用职等、编制占用数量、状态和备注。</li><li>岗位名称不存在时新增，已存在时更新。</li><li>校验岗位名称唯一、职等范围和占用数量后再确认导入。</li></ol><div class="upload-box"><p>原型使用示例文件演示校验结果</p><div class="upload-actions"><button class="button" id="downloadTemplateButton" type="button">下载模板</button><button class="button" id="loadExampleButton" type="button">加载示例文件</button></div></div><div id="importPreview"></div></div><footer class="dialog-footer"><button class="button" type="button" data-close="importDialog">取消</button><button class="button primary" id="confirmImportButton" type="button" disabled>确认导入</button></footer></div></dialog>
+  <dialog id="importDialog" class="wide" aria-labelledby="importTitle"><div class="dialog-shell"><header class="dialog-header"><h2 id="importTitle">批量导入岗位</h2><button class="icon-button" type="button" data-close="importDialog" aria-label="关闭导入">✕</button></header><div class="dialog-body"><ol class="import-steps"><li>下载模板并填写岗位名称、适用职等、编制占用数量、状态和备注。</li><li>岗位名称不存在时新增，已存在时更新；已有岗位状态不通过导入修改。</li><li>校验岗位名称唯一、职等范围和占用数量后再确认导入。</li></ol><div class="upload-box"><p>原型使用示例文件演示校验结果</p><div class="upload-actions"><button class="button" id="downloadTemplateButton" type="button">下载模板</button><button class="button" id="loadExampleButton" type="button">加载示例文件</button></div></div><div id="importPreview"></div></div><footer class="dialog-footer"><button class="button" type="button" data-close="importDialog">取消</button><button class="button primary" id="confirmImportButton" type="button" disabled>确认导入</button></footer></div></dialog>
 
   <script src="./prototype-common.js"></script>
+  <script src="./prototype-data.js"></script>
   <script>
     "use strict";
     const { byId, escapeHTML, showToast, openDialog, closeDialog } = window.PrototypeUI;
     const statusMeta = { active: ["启用", "success"], inactive: ["停用", "info"] };
-    let positions = [
-      { id: 1, name: "高级店长", grades: [11, 12], coefficient: 1, status: "active", remark: "重点门店负责人" },
-      { id: 2, name: "店长", grades: [9, 10], coefficient: 1, status: "active", remark: "门店负责人" },
-      { id: 3, name: "店助", grades: [7, 8], coefficient: 1, status: "active", remark: "协助门店经营管理" },
-      { id: 4, name: "高级导购", grades: [5, 6], coefficient: 1, status: "active", remark: "承担销售与带教" },
-      { id: 5, name: "导购", grades: [3, 4], coefficient: 1, status: "active", remark: "门店销售岗位" },
-      { id: 6, name: "兼职", grades: [1, 2], coefficient: 0.5, status: "active", remark: "社会兼职人员" },
-      { id: 7, name: "实习生", grades: [1, 2], coefficient: 0.5, status: "active", remark: "在校实习人员" },
-      { id: 8, name: "管培生", grades: [3, 4], coefficient: 1, status: "inactive", remark: "历史岗位，暂停使用" }
-    ];
-    let logs = [
-      { time: "2026-09-02 14:30:00", operator: "张明", action: "编辑岗位", target: "兼职", note: "编制占用数量：1 → 0.5；备注：临时用工 → 社会兼职人员" },
-      { time: "2026-09-02 14:12:00", operator: "张明", action: "编辑岗位", target: "店长", note: "适用职等：8、9 → 9、10" }
-    ];
+    const Shared = window.PrototypeData;
+    const positions = Shared.data.positions;
+    const logs = Shared.data.positionLogs;
     const state = { editingId: null, togglingId: null, filters: { keyword: "", grade: "", coefficient: "", status: "" }, importReady: false };
 
     function tag(status) { const meta = statusMeta[status] || statusMeta.inactive; return `<span class="tag ${meta[1]}">${meta[0]}</span>`; }
     function gradeText(grades) { return [...grades].sort((a, b) => a - b).join("、"); }
     function logValue(value) { return value === "" || value == null ? "未填写" : String(value); }
     function fieldChange(label, before, after, formatter = logValue) { return String(before ?? "") === String(after ?? "") ? "" : `${label}：${formatter(before)} → ${formatter(after)}`; }
-    function addLog(action, target, note) { logs.unshift({ time: new Date().toLocaleString("zh-CN", { hour12: false }).replaceAll("/", "-"), operator: "张明", action, target, note }); }
+    function addLog(action, target, note, operator = "张明") { logs.unshift({ time: Shared.localDateTime(), operator, action, target, note }); Shared.save(); }
     function selectedGrades() { return [...document.querySelectorAll('input[name="positionGrade"]:checked')].map(item => Number(item.value)); }
     function rows() {
       const keyword = state.filters.keyword.toLowerCase();
@@ -162,20 +151,20 @@
     byId("addButton").addEventListener("click", () => openForm());
     byId("tableBody").addEventListener("click", event => { const button = event.target.closest("[data-action]"); if (!button) return; const id = Number(button.dataset.id), item = positions.find(row => row.id === id); if (!item) return; if (button.dataset.action === "detail") openDetail(id); if (button.dataset.action === "edit") openForm(id); if (button.dataset.action === "toggle") openToggleConfirm(id); });
     byId("detailFooter").addEventListener("click", event => { const button = event.target.closest("[data-detail-edit]"); if (button) { closeDialog("detailDialog"); openForm(Number(button.dataset.detailEdit)); } });
-    byId("confirmToggleButton").addEventListener("click", () => { const item = positions.find(row => row.id === state.togglingId); if (!item) return; const oldStatus = item.status; item.status = item.status === "active" ? "inactive" : "active"; addLog(item.status === "active" ? "启用岗位" : "停用岗位", item.name, `岗位状态：${statusMeta[oldStatus][0]} → ${statusMeta[item.status][0]}`); closeDialog("toggleDialog"); render(); showToast(`岗位已${item.status === "active" ? "启用" : "停用"}`); });
+    byId("confirmToggleButton").addEventListener("click", () => { const item = positions.find(row => row.id === state.togglingId); if (!item) return; const oldStatus = item.status; item.status = item.status === "active" ? "inactive" : "active"; addLog(item.status === "active" ? "启用岗位" : "停用岗位", item.name, `岗位状态：${statusMeta[oldStatus][0]} → ${statusMeta[item.status][0]}`); Shared.save(); closeDialog("toggleDialog"); render(); showToast(`岗位已${item.status === "active" ? "启用" : "停用"}`); });
     byId("positionForm").addEventListener("submit", event => {
       event.preventDefault(); const name = byId("positionName").value.trim(), grades = selectedGrades(), coefficient = Number(byId("positionCoefficient").value), status = byId("positionStatus").value, remark = byId("positionRemark").value.trim(), errors = [];
-      if (!name) errors.push("请输入岗位名称"); if (positions.some(item => item.name === name && item.id !== state.editingId)) errors.push("岗位名称已存在"); if (!grades.length) errors.push("请至少选择一个适用职等"); if (![0.5, 1].includes(coefficient)) errors.push("编制占用数量只能为0.5或1");
+      if (!name) errors.push("请输入岗位名称"); if (positions.some(item => Shared.normalizeText(item.name) === Shared.normalizeText(name) && item.id !== state.editingId)) errors.push("岗位名称已存在"); if (!grades.length) errors.push("请至少选择一个适用职等"); if (![0.5, 1].includes(coefficient)) errors.push("编制占用数量只能为0.5或1");
       byId("formErrors").innerHTML = errors.map(error => `<div>• ${escapeHTML(error)}</div>`).join(""); byId("formErrors").hidden = !errors.length; if (errors.length) return;
       const existing = positions.find(item => item.id === state.editingId);
-      if (existing) { const changedCoefficient = existing.coefficient !== coefficient, changes = [fieldChange("岗位名称", existing.name, name), fieldChange("适用职等", gradeText(existing.grades), gradeText(grades)), fieldChange("编制占用数量", existing.coefficient, coefficient), fieldChange("备注", existing.remark, remark)].filter(Boolean); Object.assign(existing, { name, grades, coefficient, status, remark }); if (changes.length) { addLog("编辑岗位", name, changes.join("；")); showToast(changedCoefficient ? "岗位已保存，相关编制实际数量已重新计算" : "岗位已保存"); } else showToast("未检测到字段变更"); }
-      else { positions.unshift({ id: Math.max(...positions.map(item => item.id)) + 1, name, grades, coefficient, status, remark }); addLog("新增岗位", name, `适用职等：${gradeText(grades)}`); showToast("岗位已新增"); }
-      closeDialog("positionDialog"); render();
+      if (existing) { const oldCoefficient = existing.coefficient, changedCoefficient = oldCoefficient !== coefficient, changes = [fieldChange("岗位名称", existing.name, name), fieldChange("适用职等", gradeText(existing.grades), gradeText(grades)), fieldChange("编制占用数量", existing.coefficient, coefficient), fieldChange("备注", existing.remark, remark)].filter(Boolean); Object.assign(existing, { name, grades, coefficient, status: existing.status, remark }); if (changes.length) { addLog("编辑岗位", name, changes.join("；")); const affected = changedCoefficient ? Shared.applyPositionCoefficientChange(existing.id, oldCoefficient) : 0; Shared.save(); showToast(changedCoefficient ? `岗位已保存，已联动${affected}条编制` : "岗位已保存"); } else showToast("未检测到字段变更"); }
+      else { positions.unshift({ id: Math.max(...positions.map(item => item.id)) + 1, name, grades, coefficient, status, remark }); addLog("新增岗位", name, `岗位名称：未填写 → ${name}；适用职等：未填写 → ${gradeText(grades)}；编制占用数量：未填写 → ${coefficient}；岗位状态：未填写 → ${statusMeta[status][0]}`); showToast("岗位已新增"); }
+      Shared.save(); closeDialog("positionDialog"); render();
     });
     byId("logsButton").addEventListener("click", () => { renderLogs(); openDialog("logsDialog"); });
     byId("importButton").addEventListener("click", () => { state.importReady = false; byId("confirmImportButton").disabled = true; byId("importPreview").innerHTML = ""; openDialog("importDialog"); });
-    byId("loadExampleButton").addEventListener("click", () => { state.importReady = true; byId("confirmImportButton").disabled = false; byId("importPreview").innerHTML = `<div class="warning-box mt-16">岗位导入示例.xlsx：共4条；新增2条、更新1条、失败1条。失败原因：第5行适用职等为空。</div>`; });
-    byId("confirmImportButton").addEventListener("click", () => { if (!state.importReady) return; closeDialog("importDialog"); addLog("批量导入", "岗位主数据", "新增2条、更新1条、失败1条"); showToast("岗位导入完成：成功3条，失败1条"); });
+    byId("loadExampleButton").addEventListener("click", () => { state.importReady = true; byId("confirmImportButton").disabled = false; byId("importPreview").innerHTML = `<div class="warning-box mt-16">岗位导入示例.xlsx：共4条；新增2条、更新1条、失败1条。失败原因：第5行尝试修改已有岗位状态。</div>`; });
+    byId("confirmImportButton").addEventListener("click", () => { if (!state.importReady) return; addLog("批量导入", "岗位主数据", "批次结果：新增2条、更新1条、失败1条"); addLog("导入更新明细", "店助", "适用职等：7、8 → 6、7、8；备注：协助门店经营管理 → 批量更新示例"); addLog("导入失败", "店长", "失败原因：已有岗位状态不能通过导入修改"); Shared.save(); closeDialog("importDialog"); showToast("岗位导入完成：成功3条，失败1条"); });
     byId("downloadTemplateButton").addEventListener("click", () => download("岗位导入模板.csv", "岗位名称,适用职等,编制占用数量,岗位状态,备注\n"));
     byId("exportButton").addEventListener("click", () => { const result = rows(); download("岗位列表.csv", ["岗位名称,适用职等,编制占用数量,岗位状态,备注", ...result.map(item => `${item.name},\"${gradeText(item.grades)}\",${item.coefficient},${statusMeta[item.status][0]},${item.remark}`)].join("\n")); showToast(`已导出${result.length}条岗位`); });
 
