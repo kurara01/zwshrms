@@ -111,13 +111,15 @@
       { id: 8, name: "管培生", grades: [3, 4], coefficient: 1, status: "inactive", remark: "历史岗位，暂停使用" }
     ];
     let logs = [
-      { time: "2026-09-02 14:30:00", operator: "张明", action: "编辑岗位", target: "兼职", note: "编制占用数量调整为0.5" },
-      { time: "2026-09-02 14:12:00", operator: "张明", action: "编辑岗位", target: "店长", note: "适用职等调整为9、10" }
+      { time: "2026-09-02 14:30:00", operator: "张明", action: "编辑岗位", target: "兼职", note: "编制占用数量：1 → 0.5；备注：临时用工 → 社会兼职人员" },
+      { time: "2026-09-02 14:12:00", operator: "张明", action: "编辑岗位", target: "店长", note: "适用职等：8、9 → 9、10" }
     ];
     const state = { editingId: null, togglingId: null, filters: { keyword: "", grade: "", coefficient: "", status: "" }, importReady: false };
 
     function tag(status) { const meta = statusMeta[status] || statusMeta.inactive; return `<span class="tag ${meta[1]}">${meta[0]}</span>`; }
     function gradeText(grades) { return [...grades].sort((a, b) => a - b).join("、"); }
+    function logValue(value) { return value === "" || value == null ? "未填写" : String(value); }
+    function fieldChange(label, before, after, formatter = logValue) { return String(before ?? "") === String(after ?? "") ? "" : `${label}：${formatter(before)} → ${formatter(after)}`; }
     function addLog(action, target, note) { logs.unshift({ time: new Date().toLocaleString("zh-CN", { hour12: false }).replaceAll("/", "-"), operator: "张明", action, target, note }); }
     function selectedGrades() { return [...document.querySelectorAll('input[name="positionGrade"]:checked')].map(item => Number(item.value)); }
     function rows() {
@@ -160,13 +162,13 @@
     byId("addButton").addEventListener("click", () => openForm());
     byId("tableBody").addEventListener("click", event => { const button = event.target.closest("[data-action]"); if (!button) return; const id = Number(button.dataset.id), item = positions.find(row => row.id === id); if (!item) return; if (button.dataset.action === "detail") openDetail(id); if (button.dataset.action === "edit") openForm(id); if (button.dataset.action === "toggle") openToggleConfirm(id); });
     byId("detailFooter").addEventListener("click", event => { const button = event.target.closest("[data-detail-edit]"); if (button) { closeDialog("detailDialog"); openForm(Number(button.dataset.detailEdit)); } });
-    byId("confirmToggleButton").addEventListener("click", () => { const item = positions.find(row => row.id === state.togglingId); if (!item) return; item.status = item.status === "active" ? "inactive" : "active"; addLog(item.status === "active" ? "启用岗位" : "停用岗位", item.name, "岗位状态变更"); closeDialog("toggleDialog"); render(); showToast(`岗位已${item.status === "active" ? "启用" : "停用"}`); });
+    byId("confirmToggleButton").addEventListener("click", () => { const item = positions.find(row => row.id === state.togglingId); if (!item) return; const oldStatus = item.status; item.status = item.status === "active" ? "inactive" : "active"; addLog(item.status === "active" ? "启用岗位" : "停用岗位", item.name, `岗位状态：${statusMeta[oldStatus][0]} → ${statusMeta[item.status][0]}`); closeDialog("toggleDialog"); render(); showToast(`岗位已${item.status === "active" ? "启用" : "停用"}`); });
     byId("positionForm").addEventListener("submit", event => {
       event.preventDefault(); const name = byId("positionName").value.trim(), grades = selectedGrades(), coefficient = Number(byId("positionCoefficient").value), status = byId("positionStatus").value, remark = byId("positionRemark").value.trim(), errors = [];
       if (!name) errors.push("请输入岗位名称"); if (positions.some(item => item.name === name && item.id !== state.editingId)) errors.push("岗位名称已存在"); if (!grades.length) errors.push("请至少选择一个适用职等"); if (![0.5, 1].includes(coefficient)) errors.push("编制占用数量只能为0.5或1");
       byId("formErrors").innerHTML = errors.map(error => `<div>• ${escapeHTML(error)}</div>`).join(""); byId("formErrors").hidden = !errors.length; if (errors.length) return;
       const existing = positions.find(item => item.id === state.editingId);
-      if (existing) { const changedCoefficient = existing.coefficient !== coefficient; Object.assign(existing, { name, grades, coefficient, status, remark }); addLog("编辑岗位", name, changedCoefficient ? `编制占用数量改为${coefficient}，相关编制已重新计算` : "更新岗位定义"); showToast(changedCoefficient ? "岗位已保存，相关编制实际数量已重新计算" : "岗位已保存"); }
+      if (existing) { const changedCoefficient = existing.coefficient !== coefficient, changes = [fieldChange("岗位名称", existing.name, name), fieldChange("适用职等", gradeText(existing.grades), gradeText(grades)), fieldChange("编制占用数量", existing.coefficient, coefficient), fieldChange("备注", existing.remark, remark)].filter(Boolean); Object.assign(existing, { name, grades, coefficient, status, remark }); if (changes.length) { addLog("编辑岗位", name, changes.join("；")); showToast(changedCoefficient ? "岗位已保存，相关编制实际数量已重新计算" : "岗位已保存"); } else showToast("未检测到字段变更"); }
       else { positions.unshift({ id: Math.max(...positions.map(item => item.id)) + 1, name, grades, coefficient, status, remark }); addLog("新增岗位", name, `适用职等：${gradeText(grades)}`); showToast("岗位已新增"); }
       closeDialog("positionDialog"); render();
     });

@@ -133,13 +133,13 @@
       { id: 8, code: "HC00000008", storeId: 8, positionId: 6, type: "temporary", start: "2026-06-01T00:00:00", end: "2026-08-15T23:59:59", plan: 0, status: "expired", remark: "到期且无人占用" }
     ];
     let recordLogs = {
-      1: [{ time: "2026-08-12 10:30:00", title: "人员占用", note: "王芳（JM0231）占用1" }, { time: "2026-07-01 09:00:00", title: "新增编制", note: "系统生成HC00000001" }],
-      4: [{ time: "2026-09-01 11:15:00", title: "人员占用", note: "周晓（JM0521）占用0.5，实际数量达到1" }, { time: "2026-08-18 13:20:00", title: "人员占用", note: "赵敏（JM0412）占用0.5" }],
-      6: [{ time: "2026-09-01 00:00:00", title: "临时编制到期", note: "计划数量调整为0；仍有关联人员，保持生效中并标记超编待处理" }]
+      1: [{ time: "2026-08-12 10:30:00", title: "人员占用", note: "关联人员：未填写 → 王芳（JM0231）；实际数量：0 → 1；占用状态：空编 → 满编" }, { time: "2026-07-01 09:00:00", title: "新增编制", note: "系统生成HC00000001" }],
+      4: [{ time: "2026-09-01 11:15:00", title: "人员占用", note: "关联人员：未填写 → 周晓（JM0521）；实际数量：0.5 → 1；占用状态：部分占用 → 满编" }, { time: "2026-08-18 13:20:00", title: "人员占用", note: "关联人员：未填写 → 赵敏（JM0412）；实际数量：0 → 0.5；占用状态：空编 → 部分占用" }],
+      6: [{ time: "2026-09-01 00:00:00", title: "临时编制到期", note: "计划数量：1 → 0；占用状态：部分占用 → 超编待处理" }]
     };
     let logs = [
-      { time: "2026-09-01 00:00:00", operator: "系统", action: "临时编制到期", code: "HC00000006", note: "计划数量改为0，存在0.5实际占用" },
-      { time: "2026-08-20 14:35:00", operator: "张明", action: "编辑编制", code: "HC00000005", note: "结束时间延长至2026-12-31 23:59:59" }
+      { time: "2026-09-01 00:00:00", operator: "系统", action: "临时编制到期", code: "HC00000006", note: "计划数量：1 → 0；占用状态：部分占用 → 超编待处理" },
+      { time: "2026-08-20 14:35:00", operator: "张明", action: "编辑编制", code: "HC00000005", note: "结束时间：2026-10-31 23:59:59 → 2026-12-31 23:59:59；备注：国庆临时编制 → 国庆至年末临时编制" }
     ];
     const state = { selectedOrgId: null, expanded: new Set([1, 2, 3, 4, 7]), editingId: null, stoppingId: null, importMode: "create", importReady: false, filters: { code: "", storeCode: "", position: "", type: "", lifecycle: "", occupancy: "" } };
 
@@ -150,8 +150,12 @@
     function actual(item) { return people(item.id).reduce((sum, person) => sum + person.coefficient, 0); }
     function occupancy(item) { if (["expired", "stopped"].includes(item.status)) return "none"; const value = actual(item); if (value === 0) return "empty"; if (value < item.plan) return "partial"; if (value === item.plan) return "full"; return "over"; }
     function occupancyTag(item) { const meta = { empty: ["空编", "info"], partial: ["部分占用", "warning"], full: ["满编", "success"], over: ["超编待处理", "danger"], none: ["—", "info"] }[occupancy(item)]; return meta[0] === "—" ? "—" : `<span class="tag ${meta[1]}">${meta[0]}</span>`; }
+    function lifecycleText(status) { return { pending: "待生效", active: "生效中", expired: "已失效", stopped: "已停用" }[status] || status; }
     function lifecycleTag(status) { const meta = { pending: ["待生效", "warning"], active: ["生效中", "success"], expired: ["已失效", "info"], stopped: ["已停用", "info"] }[status]; return `<span class="tag ${meta[1]}">${meta[0]}</span>`; }
     function typeText(type) { return type === "formal" ? "正式编制" : "临时编制"; }
+    function logValue(value) { return value === "" || value == null ? "未填写" : String(value); }
+    function fieldChange(label, before, after, formatter = logValue) { return String(before ?? "") === String(after ?? "") ? "" : `${label}：${formatter(before)} → ${formatter(after)}`; }
+    function logTime(value) { return value ? value.replace("T", " ") : "未填写"; }
     function periodText(item) { return item.type === "formal" ? "长期有效" : `${item.start.replace("T", " ")} 至 ${item.end.replace("T", " ")}`; }
     function periodListText(item) { return item.type === "formal" ? "长期有效" : `${item.start.slice(0, 10)} 至 ${item.end.slice(0, 10)}`; }
     function scopeIds() { if (state.selectedOrgId === null) return organizations.map(item => item.id); const ids = [state.selectedOrgId]; for (const item of organizations) if (ids.includes(item.parentId)) ids.push(item.id); return ids; }
@@ -220,12 +224,12 @@
     byId("headcountStorePicker").addEventListener("keydown", event => { if (event.key === "Escape") { closeStorePicker(); byId("headcountStoreTrigger").focus(); } });
     byId("tableBody").addEventListener("click", event => { const button = event.target.closest("[data-action]"); if (!button || button.disabled) return; const id = Number(button.dataset.id), item = headcounts.find(row => row.id === id); if (!item) return; if (button.dataset.action === "detail") openDetail(id); if (button.dataset.action === "edit") openForm(id); if (button.dataset.action === "people") openPeople(id); if (button.dataset.action === "stop") { if (actual(item) > 0) return showToast("该编制仍有关联人员，不能停用", "error"); state.stoppingId = id; byId("confirmBody").innerHTML = `<div class="warning-box">停用后不再允许新增人员占用，但会保留编制编码、历史记录和变更日志。确认停用 <strong>${item.code}</strong>？</div>`; openDialog("confirmDialog"); } });
     byId("detailFooter").addEventListener("click", event => { const edit = event.target.closest("[data-detail-edit]"), peopleButton = event.target.closest("[data-detail-people]"), logsButton = event.target.closest("[data-detail-logs]"); if (edit) { closeDialog("detailDialog"); openForm(Number(edit.dataset.detailEdit)); } if (peopleButton) { closeDialog("detailDialog"); openPeople(Number(peopleButton.dataset.detailPeople)); } if (logsButton) { closeDialog("detailDialog"); openRecordLogs(Number(logsButton.dataset.detailLogs)); } });
-    byId("confirmStopButton").addEventListener("click", () => { const item = headcounts.find(row => row.id === state.stoppingId); if (!item) return; item.status = "stopped"; const time = addLog("停用编制", item.code, "管理员手工停用"); addRecordLog(item.id, "停用编制", "管理员手工停用", time); closeDialog("confirmDialog"); renderAll(); showToast("编制已停用"); });
+    byId("confirmStopButton").addEventListener("click", () => { const item = headcounts.find(row => row.id === state.stoppingId); if (!item) return; const oldStatus = item.status; item.status = "stopped"; const note = `生命周期状态：${lifecycleText(oldStatus)} → ${lifecycleText(item.status)}`, time = addLog("停用编制", item.code, note); addRecordLog(item.id, "停用编制", note, time); closeDialog("confirmDialog"); renderAll(); showToast("编制已停用"); });
     byId("headcountForm").addEventListener("submit", event => {
       event.preventDefault(); const existing = headcounts.find(item => item.id === state.editingId), storeId = Number(byId("headcountStore").value), positionId = Number(byId("headcountPosition").value), plan = Number(byId("headcountPlan").value), type = byId("headcountType").value, start = byId("headcountStart").value, end = byId("headcountEnd").value, remark = byId("headcountRemark").value.trim(), errors = [];
       if (!storeId) errors.push("请选择关联门店"); if (!positionId) errors.push("请选择编制岗位"); if (type === "temporary" && !start) errors.push("请选择开始时间"); if (type === "temporary" && !end) errors.push("请选择结束时间"); if (type === "temporary" && start && end && end <= start) errors.push("结束时间必须晚于开始时间"); if (existing && actual(existing) > 0 && existing.type === "temporary" && end < existing.end) errors.push("已有人员占用时只能延长结束时间");
       byId("formErrors").innerHTML = errors.map(error => `<div>• ${escapeHTML(error)}</div>`).join(""); byId("formErrors").hidden = !errors.length; if (errors.length) return;
-      if (existing) { const changes = []; if (existing.storeId !== storeId) changes.push(`门店：${org(existing.storeId)?.name} → ${org(storeId)?.name}`); if (existing.positionId !== positionId) changes.push(`岗位：${position(existing.positionId)?.name} → ${position(positionId)?.name}`); if (existing.plan !== plan) changes.push(`计划数量：${existing.plan} → ${plan}`); if (existing.end !== end && type === "temporary") changes.push(`结束时间：${existing.end.replace("T", " ")} → ${end.replace("T", " ")}`); Object.assign(existing, { storeId, positionId, plan, start, end, remark }); const time = addLog("编辑编制", existing.code, changes.join("；") || "更新备注"); addRecordLog(existing.id, "编辑编制", changes.join("；") || "更新备注", time); showToast("编制已保存"); }
+      if (existing) { const changes = [fieldChange("关联门店", org(existing.storeId)?.name, org(storeId)?.name), fieldChange("编制岗位", position(existing.positionId)?.name, position(positionId)?.name), fieldChange("计划数量", existing.plan, plan), fieldChange("开始时间", existing.start, start, logTime), fieldChange("结束时间", existing.end, end, logTime), fieldChange("备注", existing.remark, remark)].filter(Boolean); Object.assign(existing, { storeId, positionId, plan, start, end, remark }); if (changes.length) { const note = changes.join("；"), time = addLog("编辑编制", existing.code, note); addRecordLog(existing.id, "编辑编制", note, time); showToast("编制已保存"); } else showToast("未检测到字段变更"); }
       else { const id = Math.max(...headcounts.map(item => item.id)) + 1, code = nextCode(), now = new Date(), status = type === "temporary" && new Date(start) > now ? "pending" : "active", item = { id, code, storeId, positionId, type, start: type === "temporary" ? start : "", end: type === "temporary" ? end : "", plan, status, remark }; headcounts.unshift(item); const time = addLog("新增编制", code, `${org(storeId)?.name} · ${position(positionId)?.name}`); addRecordLog(id, "新增编制", `系统生成${code}`, time); showToast(`编制已新增：${code}`); }
       closeDialog("headcountDialog"); renderAll();
     });
